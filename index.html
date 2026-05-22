@@ -300,8 +300,11 @@
 <script>
 /* ===== CONFIG (metas não constam da planilha — ajuste aqui) ===== */
 const CONFIG = { metaIndepTotal:1500, metaIndepFiis:700, metaIndepAcoes:800, metaPatrimonio2026:150000, metaAcoesPct:68.75, metaFiisPct:31.25, projGrowth:0.17 };
-const FILE_ID = "1aSv8hEY6xg2fOtNeZ8sDCrRb92ZkM-zQXwotKmybdKI";
+const FILE_ID = "1ZbX-wGNM-WR0X1v-u61nF_Zx2pqbE5VOgabY3EZJfmM";
 const DRIVE_TOOL = "mcp__fcfb38a8-9339-4ca8-b68b-70783af4a15e__read_file_content";
+/* leitura ao vivo no GitHub/celular: lê a planilha publicada por link */
+const SHEET_ID = "1ZbX-wGNM-WR0X1v-u61nF_Zx2pqbE5VOgabY3EZJfmM";
+const SHEET_TABS = { FIIS:"FIIS", ACOES:"AÇÕES", PROVENTOS:"PROVENTO$", PATRIMONIO:"PATRIMÔNIO" };
 
 /* ===== retrato de segurança (21/05/2026) ===== */
 const SNAPSHOT = {
@@ -402,6 +405,53 @@ function parseSheet(md){
   return out;
 }
 function valid(d){return d&&d.fiis&&d.acoes&&d.fiis.length>=3&&d.acoes.length>=3&&d.patrimonio>0&&d.alloc.length>=2;}
+
+/* ===== leitura ao vivo via CSV (GitHub/celular) ===== */
+function csvRows(text){
+  const rows=[]; const lines=String(text||"").split(/\r?\n/);
+  for(const line of lines){ const cells=[]; let cur="",q=false;
+    for(let i=0;i<line.length;i++){ const c=line[i];
+      if(q){ if(c==='"'){ if(line[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+      else { if(c==='"') q=true; else if(c===',') {cells.push(cur);cur="";} else cur+=c; } }
+    cells.push(cur); rows.push(cells.map(s=>s.trim())); }
+  return rows;
+}
+function parseCSV(tabs){
+  const out={updated:"ao vivo · planilha",patrimonio:0,dyHolding:0,proventosTotal:0,alloc:[],fiis:[],acoes:[],equity:[],prov:[],provAnos:[],acaoSetorIdeal:{}};
+  const isTk=s=>/^[A-Z]{2,6}\d{1,2}$/.test(s);
+  csvRows(tabs.FIIS).forEach(r=>{const t=(r[0]||"").replace(/^BVMF:/,"").trim();
+    if(isTk(t)) out.fiis.push({ativo:t,setor:r[18]||"—",preco:num(r[3]),pm:num(r[4]),rent:num(r[5]),ms:num(r[10]),teto:num(r[11]),qtd:num(r[12]),valor:num(r[13]),part:num(r[14]),holding:num(r[15]),aporte:num(r[9])});});
+  csvRows(tabs.ACOES).forEach(r=>{const t=(r[0]||"").replace(/^BVMF:/,"").trim();
+    if(isTk(t)) out.acoes.push({ativo:t,setor:r[18]||"—",preco:num(r[3]),pm:num(r[4]),teto:num(r[5]),rent:num(r[6]),ms:num(r[11]),qtd:num(r[12]),valor:num(r[13]),part:num(r[14]),holding:num(r[15]),aporte:num(r[10])});
+    const sn=(r[20]||"").trim(); if(/^(Elétrico|Eletrico|Bancos|Mineração|Mineracao|Seguridade)$/i.test(sn) && r[24]) out.acaoSetorIdeal[sn]=num(r[24]);});
+  const ml={Jan:"Jan",Fev:"Fev",Mar:"Mar",Abril:"Abr",Maio:"Mai",Junho:"Jun",Julho:"Jul",Agosto:"Ago",Setembro:"Set",Outubro:"Out",Novembro:"Nov",Dezembro:"Dez"};
+  let yy=null;
+  csvRows(tabs.PROVENTOS).forEach(r=>{const k=(r[1]||"").trim();
+    if(/^TOTAL$/i.test(k)){out.proventosTotal=num(r[6]);out.dyHolding=num(r[8]);return;}
+    const m=k.match(/^20(\d\d)$/); if(m){yy=m[1];out.provAnos.push({ano:k,fii:num(r[2]),acao:num(r[3]),media:num(r[4]),dia:num(r[5]),total:num(r[6]),varAA:r[7]?num(r[7]):null});return;}
+    if(yy&&ml[k]){const fii=num(r[2]),acao=num(r[3]);if(fii||acao)out.prov.push({mes:ml[k]+"/"+yy,fii,acao});}});
+  const meses={Janeiro:"Jan",Fevereiro:"Fev","Março":"Mar",Marco:"Mar",Abril:"Abr",Maio:"Mai",Junho:"Jun"};
+  const corOf=u=>/FII/.test(u)?"var(--fiis)":/RENDA/.test(u)?"var(--rf)":/CAIXA/.test(u)?"var(--caixa)":/EM\s*\$|US/.test(u)?"var(--us)":"var(--acoes)";
+  csvRows(tabs.PATRIMONIO).forEach(r=>{
+    const an=(r[8]||"").trim().toUpperCase();
+    if(/AÇÕES|ACOES|FII|RENDA|CAIXA/.test(an) && r[10]!==undefined && r[10]!==""){
+      let nm=an;if(/EM\s*\$/.test(an))nm="Ações US$";else if(/AÇÕES|ACOES/.test(an))nm="Ações BR";else if(/FII/.test(an))nm="FIIs";else if(/RENDA/.test(an))nm="Renda Fixa";else if(/CAIXA/.test(an))nm="Caixa";
+      if(!out.alloc.find(a=>a.nome===nm)) out.alloc.push({nome:nm,valor:num(r[9]),atual:num(r[10]),ideal:num(r[11]),delta:num(r[12]),cor:corOf(an)});}
+    const pk=(r[14]||"").trim();
+    if(/^20\d\d$/.test(pk)) out.patrimonio=num(r[15]);
+    else if(meses[pk]){const v=num(r[15]);if(v>0)out.equity.push({mes:meses[pk],valor:v});}
+  });
+  if(!out.proventosTotal)out.proventosTotal=out.prov.reduce((s,p)=>s+p.fii+p.acao,0);
+  return out;
+}
+async function fetchSheetCSV(){
+  const u=t=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(t)}`;
+  const get=async t=>{try{const r=await fetch(u(t));return r.ok?await r.text():"";}catch(e){return "";}};
+  const [FIIS,ACOES,PROVENTOS,PATRIMONIO]=await Promise.all([get(SHEET_TABS.FIIS),get(SHEET_TABS.ACOES),get(SHEET_TABS.PROVENTOS),get(SHEET_TABS.PATRIMONIO)]);
+  const d=parseCSV({FIIS,ACOES,PROVENTOS,PATRIMONIO});
+  d.updated="ao vivo · planilha · "+new Date().toLocaleDateString("pt-BR");
+  return d;
+}
 
 /* ===== render ===== */
 let charts=[]; let DATA=null; let fiiSort="padrao", acaoSort="padrao";
@@ -882,14 +932,21 @@ function extractText(res){if(res==null)return"";if(typeof res==="string")return 
 function showErr(m){const e=document.getElementById("err");e.textContent=m;e.style.display="block";}
 async function boot(){
   setDate(); setupTabs(); setupRegistro(); render(SNAPSHOT); setSrc(false);
-  if(!(window.cowork&&window.cowork.callMcpTool))return;
-  try{
-    const res=await window.cowork.callMcpTool(DRIVE_TOOL,{fileId:FILE_ID});
-    let md=extractText(res); if(md.trim().startsWith("{")){try{md=extractText(JSON.parse(md))}catch(e){}}
-    const p=parseSheet(md);
-    if(valid(p)){render(p);setSrc(true);}
-    else showErr("Não consegui interpretar a planilha ao vivo agora — exibindo o último retrato (21/05/2026).");
-  }catch(e){showErr("Leitura ao vivo indisponível — exibindo o último retrato (21/05/2026).");}
+  if(window.cowork&&window.cowork.callMcpTool){
+    try{
+      const res=await window.cowork.callMcpTool(DRIVE_TOOL,{fileId:FILE_ID});
+      let md=extractText(res); if(md.trim().startsWith("{")){try{md=extractText(JSON.parse(md))}catch(e){}}
+      const p=parseSheet(md);
+      if(valid(p)){render(p);setSrc(true);}
+      else showErr("Não consegui interpretar a planilha ao vivo agora — exibindo o último retrato.");
+    }catch(e){showErr("Leitura ao vivo indisponível — exibindo o último retrato.");}
+  } else {
+    try{
+      const d=await fetchSheetCSV();
+      if(valid(d)){render(d);setSrc(true);}
+      else showErr("Não consegui ler a planilha publicada agora — exibindo o último retrato. Confira se o link continua acessível.");
+    }catch(e){showErr("Não consegui acessar a planilha publicada. Confirme em Compartilhar que o acesso está como 'Qualquer pessoa com o link'.");}
+  }
 }
 if(document.readyState!=="loading")boot();else document.addEventListener("DOMContentLoaded",boot);
 </script>
