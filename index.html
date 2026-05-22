@@ -248,6 +248,17 @@
 
   <!-- ABA APORTES -->
   <section data-panel="aportes" class="hide">
+    <div class="sec-title" style="margin-top:4px">Aportes realizados <span style="font-weight:500;color:var(--muted);font-size:12px" id="realPeriodo"></span></div>
+    <div class="grid" id="realKpis" style="grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px"></div>
+    <div class="grid" style="grid-template-columns:1.3fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="card"><div class="panel-h">Compras vs Vendas — mensal</div><div class="chart-box"><canvas id="realMensalChart"></canvas></div></div>
+      <div class="card"><div class="panel-h">Compras por classe</div><div class="chart-box"><canvas id="realClasseChart"></canvas></div><div class="legendrow" id="realClasseLeg"></div></div>
+    </div>
+    <div class="sec-title">Ativo mais comprado — por ano</div>
+    <div class="grid three" id="realTop" style="margin-bottom:16px"></div>
+    <div class="card" style="overflow-x:auto;margin-bottom:22px"><div class="panel-h">Movimentação mensal — compras e vendas</div><table id="realTable"></table></div>
+    <p class="note" style="margin-top:0;margin-bottom:22px">Fonte: extrato de movimentação da B3 (jun/2024 – mai/2026). Para atualizar, exporte um novo extrato na Área do Investidor da B3 e me envie.</p>
+    <div style="border-top:1px solid var(--line);margin-bottom:18px"></div>
     <div class="sec-title" style="margin-top:4px">Plano de Aportes <span style="font-weight:500;color:var(--muted);font-size:12px" id="aporteHint"></span></div>
     <div class="grid" id="aporteKpis" style="grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px"></div>
     <div class="sec-title">Meus Aportes — registro <span style="font-weight:500;color:var(--muted);font-size:12px">lance cada aporte; soma e salva automaticamente</span></div>
@@ -503,11 +514,11 @@ function render(d){
   renderProvKpis(d); renderIndep(d,totFii,totAcao); renderProvTable(d); renderProj(d);
 
   /* atenção + aportes + meta */
-  renderAlerts(d,acaoSet); renderAportes(d); renderMeta2026(d); renderRegistro(); renderFatos();
+  renderAlerts(d,acaoSet); renderRealizados(); renderAportes(d); renderMeta2026(d); renderRegistro(); renderFatos();
 
   /* charts */
   destroy();
-  drawDonut(d); drawEquity(d); drawProvAno(d); drawProv12(d); drawMetaProj(d); drawAporteCharts(d);
+  drawDonut(d); drawEquity(d); drawProvAno(d); drawProv12(d); drawMetaProj(d); drawAporteCharts(d); drawRealizadosCharts();
 
   /* footnote */
   document.getElementById("footnote").innerHTML="Fonte: planilha \"TONETTO ® HOLDING\" no Google Drive (compartilhada por Caio Venom), relida a cada abertura. "+
@@ -909,6 +920,48 @@ function setupRegistro(){
     document.getElementById("apValor").value=""; document.getElementById("apAtivo").value="";
     renderRegistro();
   });
+}
+
+/* ===== Aportes realizados (extrato B3; atualizar este bloco ao reprocessar) ===== */
+/* REAL_START */
+const REALIZADOS = {"periodo":"jun/2024 – mai/2026","totalCompras":92269.07,"totalVendas":25441.07,"liquido":66828.0,"porClasse":{"Ações":52351.12,"FIIs":35343.56,"Renda Fixa":4574.39},"mensal":[{"mes":"Jun/24","ano":"2024","ca":0.0,"cf":0.0,"cr":447.6,"tc":447.6,"tv":1000.0,"liq":-552.4},{"mes":"Jul/24","ano":"2024","ca":4512.83,"cf":5501.43,"cr":0.0,"tc":10014.26,"tv":449.73,"liq":9564.53},{"mes":"Ago/24","ano":"2024","ca":4832.37,"cf":2273.03,"cr":0.0,"tc":7105.4,"tv":0.0,"liq":7105.4},{"mes":"Set/24","ano":"2024","ca":4469.49,"cf":3549.39,"cr":0.0,"tc":8018.88,"tv":0.0,"liq":8018.88},{"mes":"Out/24","ano":"2024","ca":2041.36,"cf":2388.32,"cr":0.0,"tc":4429.68,"tv":0.0,"liq":4429.68},{"mes":"Dez/24","ano":"2024","ca":247.55,"cf":97.94,"cr":0.0,"tc":345.49,"tv":0.0,"liq":345.49},{"mes":"Jan/25","ano":"2025","ca":1673.13,"cf":1974.4,"cr":0.0,"tc":3647.53,"tv":0.0,"liq":3647.53},{"mes":"Fev/25","ano":"2025","ca":0.0,"cf":2622.85,"cr":0.0,"tc":2622.85,"tv":0.0,"liq":2622.85},{"mes":"Mar/25","ano":"2025","ca":1696.78,"cf":0.0,"cr":0.0,"tc":1696.78,"tv":0.0,"liq":1696.78},{"mes":"Abr/25","ano":"2025","ca":1001.2,"cf":2239.23,"cr":0.0,"tc":3240.43,"tv":0.0,"liq":3240.43},{"mes":"Mai/25","ano":"2025","ca":0.0,"cf":1079.28,"cr":0.0,"tc":1079.28,"tv":0.0,"liq":1079.28},{"mes":"Jun/25","ano":"2025","ca":1230.9,"cf":0.0,"cr":0.0,"tc":1230.9,"tv":0.0,"liq":1230.9},{"mes":"Jul/25","ano":"2025","ca":1823.99,"cf":2065.4,"cr":1081.88,"tc":4971.27,"tv":0.0,"liq":4971.27},{"mes":"Ago/25","ano":"2025","ca":729.2,"cf":0.0,"cr":0.0,"tc":729.2,"tv":0.0,"liq":729.2},{"mes":"Set/25","ano":"2025","ca":2890.9,"cf":1037.22,"cr":0.0,"tc":3928.12,"tv":328.14,"liq":3599.98},{"mes":"Out/25","ano":"2025","ca":120.61,"cf":336.96,"cr":0.0,"tc":457.57,"tv":0.0,"liq":457.57},{"mes":"Nov/25","ano":"2025","ca":1656.65,"cf":4067.05,"cr":0.0,"tc":5723.7,"tv":0.0,"liq":5723.7},{"mes":"Dez/25","ano":"2025","ca":168.64,"cf":364.16,"cr":0.0,"tc":532.8,"tv":0.0,"liq":532.8},{"mes":"Jan/26","ano":"2026","ca":161.97,"cf":1627.21,"cr":0.0,"tc":1789.18,"tv":0.0,"liq":1789.18},{"mes":"Fev/26","ano":"2026","ca":908.21,"cf":3012.0,"cr":0.0,"tc":3920.21,"tv":8118.5,"liq":-4198.29},{"mes":"Mar/26","ano":"2026","ca":11996.6,"cf":98.0,"cr":0.0,"tc":12094.6,"tv":12498.94,"liq":-404.34},{"mes":"Abr/26","ano":"2026","ca":10024.26,"cf":1009.69,"cr":0.0,"tc":11033.95,"tv":3045.76,"liq":7988.19},{"mes":"Mai/26","ano":"2026","ca":164.48,"cf":0.0,"cr":3044.91,"tc":3209.39,"tv":0.0,"liq":3209.39}],"topAno":{"2024":[{"tk":"TRXF11","v":5060.57,"pct":16.7},{"tk":"XPML11","v":4434.73,"pct":14.6},{"tk":"BBAS3","v":4409.89,"pct":14.5},{"tk":"CXSE3","v":3486.47,"pct":11.5},{"tk":"BTLG11","v":3437.23,"pct":11.3},{"tk":"VALE3","v":2428.39,"pct":8.0},{"tk":"AURE3","v":2231.14,"pct":7.3},{"tk":"TRPL4","v":995.48,"pct":3.3},{"tk":"TAEE11","v":995.28,"pct":3.3}],"2025":[{"tk":"HGCR11","v":3443.85,"pct":11.5},{"tk":"RBRR11","v":3004.92,"pct":10.1},{"tk":"CXSE3","v":2799.7,"pct":9.4},{"tk":"RBRP11","v":2174.69,"pct":7.3},{"tk":"ISAE4","v":2089.62,"pct":7.0},{"tk":"BBDC4","v":1617.49,"pct":5.4},{"tk":"XPML11","v":1590.95,"pct":5.3},{"tk":"RECR11","v":1589.42,"pct":5.3},{"tk":"BBSE3","v":1581.55,"pct":5.3}],"2026":[{"tk":"BBSE3","v":6180.45,"pct":19.3},{"tk":"ITUB4","v":3857.75,"pct":12.0},{"tk":"BBAS3","v":3799.15,"pct":11.9},{"tk":"TAEE11","v":3519.45,"pct":11.0},{"tk":"ISAE4","v":3472.41,"pct":10.8},{"tk":"TRXF11","v":3107.43,"pct":9.7},{"tk":"CDB","v":3044.91,"pct":9.5},{"tk":"CXSE3","v":1321.6,"pct":4.1},{"tk":"SAPR11","v":1011.75,"pct":3.2}]}};
+/* REAL_END */
+function renderRealizados(){
+  if(typeof REALIZADOS==="undefined"||!REALIZADOS) return; const R=REALIZADOS;
+  const pe=document.getElementById("realPeriodo"); if(pe) pe.textContent="· "+R.periodo;
+  const k=document.getElementById("realKpis"); if(k) k.innerHTML=[
+    {l:"Total Compras",v:fmt(R.totalCompras),s:R.periodo+" (bruto)",c:"var(--roxo)"},
+    {l:"Total Vendas",v:fmt(R.totalVendas),s:"no período",c:"#EA580C"},
+    {l:"Líquido",v:fmt(R.liquido),s:"compras − vendas",c:"var(--verde)"},
+  ].map(x=>`<div class="card kpi"><div class="label">${x.l}</div><div class="value" style="color:${colVar(x.c)}">${x.v}</div><div class="sub">${x.s}</div></div>`).join("");
+  const tdiv=document.getElementById("realTop");
+  if(tdiv){ const anos=Object.keys(R.topAno).sort();
+    tdiv.innerHTML=anos.map(ano=>{const rows=R.topAno[ano],max=rows.length?rows[0].v:1;
+      return `<div class="card"><div class="panel-h">${ano}</div>`+rows.map((r,i)=>`<div style="margin:8px 0"><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span><b style="color:var(--label)">${i+1}</b> <span class="tk">${r.tk}</span></span><span style="color:var(--muted)">${fmt(r.v)} · ${pct(r.pct)}</span></div><div class="mini-bar"><i style="width:${Math.round(100*r.v/max)}%;background:${SECT[i%SECT.length]}"></i></div></div>`).join("")+`</div>`;}).join("");
+  }
+  const tb=document.getElementById("realTable");
+  if(tb){ const head=`<thead><tr><th>Mês</th><th>Ações</th><th>%</th><th>FIIs</th><th>%</th><th>RF</th><th>%</th><th>Compras</th><th>Vendas</th><th>Líquido</th></tr></thead>`;
+    const anos=[...new Set(R.mensal.map(m=>m.ano))]; const pc=(v,t)=>t?pct(100*v/t):"—"; let body="";
+    anos.forEach(ano=>{const ms=R.mensal.filter(m=>m.ano===ano);
+      const sca=ms.reduce((s,m)=>s+m.ca,0),scf=ms.reduce((s,m)=>s+m.cf,0),scr=ms.reduce((s,m)=>s+m.cr,0),stc=ms.reduce((s,m)=>s+m.tc,0),stv=ms.reduce((s,m)=>s+m.tv,0);
+      body+=`<tr style="font-weight:700;background:#F8F9FB"><td>${ano}</td><td>${fmt(sca)}</td><td>${pc(sca,stc)}</td><td>${fmt(scf)}</td><td>${pc(scf,stc)}</td><td>${fmt(scr)}</td><td>${pc(scr,stc)}</td><td>${fmt(stc)}</td><td>${stv?fmt(stv):"—"}</td><td class="${stc-stv>=0?'pos':'neg'}">${fmt(stc-stv)}</td></tr>`;
+      ms.forEach(m=>{body+=`<tr><td style="padding-left:16px;color:var(--muted)">${m.mes}</td><td>${m.ca?fmt(m.ca):"—"}</td><td>${m.tc?pc(m.ca,m.tc):"—"}</td><td>${m.cf?fmt(m.cf):"—"}</td><td>${m.tc?pc(m.cf,m.tc):"—"}</td><td>${m.cr?fmt(m.cr):"—"}</td><td>${m.tc?pc(m.cr,m.tc):"—"}</td><td style="font-weight:600">${fmt(m.tc)}</td><td>${m.tv?`<span class="neg">${fmt(m.tv)}</span>`:"—"}</td><td class="${m.liq>=0?'pos':'neg'}">${fmt(m.liq)}</td></tr>`;});
+    });
+    tb.innerHTML=head+"<tbody>"+body+"</tbody>";
+  }
+}
+function drawRealizadosCharts(){
+  if(typeof REALIZADOS==="undefined"||!REALIZADOS) return; const R=REALIZADOS;
+  const mc=document.getElementById("realMensalChart");
+  if(mc) charts.push(new Chart(mc,{type:"bar",data:{labels:R.mensal.map(m=>m.mes),datasets:[
+    {label:"Compras",data:R.mensal.map(m=>m.tc),backgroundColor:"#22C55E",borderRadius:3},
+    {label:"Vendas",data:R.mensal.map(m=>-m.tv),backgroundColor:"#F97316",borderRadius:3}]},
+    options:{plugins:{legend:{position:"top",labels:{boxWidth:11,font:{size:11}}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(Math.abs(c.parsed.y))}`}}},scales:{x:{grid:{display:false},ticks:{font:{size:9},maxRotation:90,minRotation:90}},y:{ticks:{callback:v=>"R$ "+(v/1000)+"k"}}}}}));
+  const cc=document.getElementById("realClasseChart"); const cmap={"Ações":"--acoes","FIIs":"--fiis","Renda Fixa":"--rf"};
+  if(cc){ const ent=Object.entries(R.porClasse);
+    charts.push(new Chart(cc,{type:"doughnut",data:{labels:ent.map(e=>e[0]),datasets:[{data:ent.map(e=>e[1]),backgroundColor:ent.map(e=>colVar("var("+(cmap[e[0]]||"--caixa")+")")),borderColor:"#fff",borderWidth:2}]},options:{cutout:"62%",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmt(c.parsed)} (${pct(100*c.parsed/R.totalCompras)})`}}}}}));
+    document.getElementById("realClasseLeg").innerHTML=ent.map(e=>`<span><i style="background:${colVar('var('+(cmap[e[0]]||'--caixa')+')')}"></i>${e[0]} ${pct(100*e[1]/R.totalCompras)}</span>`).join("");
+  }
 }
 
 /* ===== tabs + boot ===== */
