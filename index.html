@@ -1,4 +1,17 @@
 <!doctype html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Tonetto Holding",
+  "schemaVersion": 1,
+  "description": "Painel ao vivo \"TONETTO HOLDING\" no padrão CVENOM, com 6 abas. Relê a planilha do Google Drive a cada abertura: Carteira (5 KPIs + 5 mini-cards de alocação + donut + setores + evolução patrimonial), FIIs e Ações (tabelas com preço/PM/rent/M.S. e filtros), Proventos (independência financeira, evolução anual, últimos 12 meses, projeções 17% a.a., histórico mensal), Pontos de Atenção (alertas automáticos por M.S. e setor) e Aportes (ativos com M.S.>0). Retrato de 21/05/2026 embutido como fallback.",
+  "mcpTools": [
+    "mcp__fcfb38a8-9339-4ca8-b68b-70783af4a15e__read_file_content"
+  ],
+  "mcpServerNames": [
+    "Google Drive"
+  ]
+}
+</script>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
@@ -55,6 +68,13 @@
   th,td{padding:8px 9px;text-align:right;white-space:nowrap}
   th:first-child,td:first-child{text-align:left}
   thead th{font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--label);border-bottom:1px solid var(--line);font-weight:600}
+  thead th.sortable{cursor:pointer;user-select:none;-webkit-user-select:none;transition:color .12s}
+  thead th.sortable:hover{color:var(--ink)}
+  thead th.sorted{color:var(--ink)}
+  thead th .arr{display:inline-block;width:8px;font-size:9px;margin-left:3px;color:var(--roxo)}
+  tr.prov-year{cursor:pointer;font-weight:700;background:#F8F9FB;user-select:none;-webkit-user-select:none}
+  tr.prov-year:hover{background:#EEF1F6}
+  .prov-caret{display:inline-block;width:12px;color:var(--roxo);font-size:10px}
   tbody tr{border-bottom:1px solid #F1F2F5}
   tbody tr:last-child{border-bottom:none}
   .tk{font-weight:700}
@@ -230,14 +250,29 @@
   <!-- ABA PROVENTOS -->
   <section data-panel="proventos" class="hide">
     <div class="grid" id="provKpis" style="grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px"></div>
-    <div class="card" style="margin-bottom:16px"><div class="panel-h">Independência Financeira <span class="hint" id="metaHint"></span></div><div id="indep"></div></div>
+
+    <div class="sec-title">Projeções Futuras <span style="font-weight:500;color:var(--muted);font-size:12px">~17% a.a.</span></div>
+    <div class="grid" id="projCards" style="grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px"></div>
+
+    <div class="card" style="overflow-x:auto;margin-bottom:16px"><div class="panel-h">Histórico Mensal Completo</div><table id="provTable"></table></div>
+
+    <div class="cards-head" style="margin-top:4px">
+      <div class="panel-h" style="margin:0">Proventos acumulados por ativo <span class="hint" id="provAtivoHint"></span></div>
+      <select id="provAtivoSortSel" class="sortsel">
+        <option value="totalHi">Ordenar: Maior total</option>
+        <option value="totalLo">Menor total</option>
+        <option value="nHi">Mais pagamentos</option>
+        <option value="az">Ticker A–Z</option>
+      </select>
+    </div>
+    <div class="cardgrid" id="provAtivoCards" style="margin-bottom:16px"></div>
+
     <div class="grid" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
       <div class="card"><div class="panel-h">Evolução Anual de Proventos</div><div class="chart-box sm"><canvas id="provAno"></canvas></div></div>
       <div class="card"><div class="panel-h">Últimos 12 Meses <span class="hint">Total · Ações · FIIs</span></div><div class="chart-box sm"><canvas id="prov12"></canvas></div></div>
     </div>
-    <div class="sec-title">Projeções Futuras <span style="font-weight:500;color:var(--muted);font-size:12px">~17% a.a.</span></div>
-    <div class="grid" id="projCards" style="grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px"></div>
-    <div class="card" style="overflow-x:auto"><div class="panel-h">Histórico Mensal Completo</div><table id="provTable"></table></div>
+
+    <div class="card" style="margin-bottom:16px"><div class="panel-h"><span id="metaTitle">Meta</span></div><div id="indep"></div></div>
   </section>
 
   <!-- ABA ATENÇÃO -->
@@ -472,6 +507,28 @@ async function fetchSheetCSV(){
 
 /* ===== render ===== */
 let charts=[]; let DATA=null; let fiiSort="padrao", acaoSort="padrao";
+/* ordenação por clique nas colunas das tabelas da aba Carteira */
+let cartFiiSort={key:"valor",dir:"desc"};
+let cartAcaoSort={key:"valor",dir:"desc"};
+const TEXT_KEYS={ativo:1,setor:1};
+/* aba Proventos: anos expandidos (yy -> bool), preservado entre re-renders */
+let provOpenYears={};
+/* aba Proventos: ordenação da seção "por ativo" */
+let provAtivoSort="totalHi";
+function sortRows(list,key,dir){
+  const a=list.slice();
+  a.sort((x,y)=>{
+    if(TEXT_KEYS[key]){const xv=(x[key]==null?"":x[key]).toString(),yv=(y[key]==null?"":y[key]).toString();
+      return dir==="asc"?xv.localeCompare(yv,"pt-BR"):yv.localeCompare(xv,"pt-BR");}
+    const xv=x[key]||0, yv=y[key]||0;
+    return dir==="asc"?xv-yv:yv-xv;
+  });
+  return a;
+}
+function thSort(lbl,key,st){
+  const on=st&&st.key===key; const ar=on?(st.dir==="desc"?"▼":"▲"):"";
+  return `<th class="sortable${on?" sorted":""}" data-key="${key}" title="Clique para ordenar">${lbl}<span class="arr">${ar}</span></th>`;
+}
 function destroy(){charts.forEach(c=>{try{c.destroy()}catch(e){}});charts=[];}
 function groupSet(list){const m={};list.forEach(x=>m[x.setor]=(m[x.setor]||0)+x.valor);const tot=Object.values(m).reduce((a,b)=>a+b,0)||1;return Object.entries(m).map(([k,v])=>({setor:k,valor:v,pct:100*v/tot})).sort((a,b)=>b.valor-a.valor);}
 
@@ -517,7 +574,7 @@ function render(d){
   renderFiiTable(); renderAcaoTable(); renderFiiCards(); renderAcaoCards();
 
   /* proventos */
-  renderProvKpis(d); renderIndep(d,totFii,totAcao); renderProvTable(d); renderProj(d);
+  renderProvKpis(d); renderIndep(d,totFii,totAcao); renderProvTable(d); renderProj(d); renderProvAtivo();
 
   /* atenção + aportes + meta */
   renderAlerts(d,acaoSet); renderRealizados(); renderAportes(d); renderMeta2026(d); renderRegistro(); renderFatos();
@@ -576,15 +633,14 @@ function renderFiiCards(){
     </div>`;
   }).join("");
 }
-function fiiTableHTML(list,tot){
-  const head=`<thead><tr><th>Ticker</th><th>Segmento</th><th>Preço</th><th>PM</th><th>Rent.%</th><th>Qtd</th><th>Valor</th><th>Part.%</th><th>Teto</th><th>M.S.%</th><th>Div/cota</th><th>YoC</th><th>P/VP</th></tr></thead>`;
+function fiiTableHTML(list,tot,st){
+  const head=`<thead><tr>${thSort("Ticker","ativo",st)}${thSort("Segmento","setor",st)}${thSort("Preço","preco",st)}${thSort("PM","pm",st)}${thSort("Rent.%","rent",st)}${thSort("Qtd","qtd",st)}${thSort("Valor","valor",st)}${thSort("Part.%","part",st)}${thSort("Teto","teto",st)}${thSort("M.S.%","ms",st)}<th>Div/cota</th><th>YoC</th><th>P/VP</th></tr></thead>`;
   const body=list.map(x=>`<tr><td class="tk">${x.ativo}</td><td><span class="tag">${x.setor}</span></td><td>${fmt(x.preco)}</td><td>${fmt(x.pm)}</td>${rentCell(x.rent)}<td>${x.qtd.toLocaleString("pt-BR")}</td><td>${fmt(x.valor)}</td><td>${pct(x.part)}</td><td>${fmt(x.teto)}</td>${msCell(x.ms)}<td>—</td><td>—</td><td>—</td></tr>`).join("");
   return head+"<tbody>"+body+`<tr style="font-weight:700;border-top:2px solid var(--line)"><td>Total</td><td></td><td></td><td></td><td></td><td></td><td>${fmt(tot)}</td><td>100%</td><td></td><td></td><td></td><td></td><td></td></tr>`+"</tbody>";
 }
 function renderFiiTable(){
   const tot=DATA.fiis.reduce((s,x)=>s+x.valor,0);
-  const m=document.getElementById("fiiTable"); if(m) m.innerHTML=fiiTableHTML(sortList(DATA.fiis,fiiSort),tot);
-  const c=document.getElementById("fiiTableCart"); if(c) c.innerHTML=fiiTableHTML(DATA.fiis.slice().sort((a,b)=>b.valor-a.valor),tot);
+  const c=document.getElementById("fiiTableCart"); if(c) c.innerHTML=fiiTableHTML(sortRows(DATA.fiis,cartFiiSort.key,cartFiiSort.dir),tot,cartFiiSort);
 }
 const ACAO_COLORS={VALE3:"#2563EB",BBAS3:"#1D4ED8",TAEE11:"#E8A33D",ISAE4:"#7C3AED",AURE3:"#0EA5A4",BBSE3:"#64748B",ITUB4:"#EC6608"};
 function renderAcaoCards(){
@@ -617,15 +673,14 @@ function renderAcaoCards(){
     </div>`;
   }).join("");
 }
-function acaoTableHTML(list,tot){
-  const head=`<thead><tr><th>Ticker</th><th>Setor</th><th>Preço</th><th>PM</th><th>Rent.%</th><th>Qtd</th><th>Valor</th><th>Part.%</th><th>Teto</th><th>M.S.%</th><th>DY</th></tr></thead>`;
+function acaoTableHTML(list,tot,st){
+  const head=`<thead><tr>${thSort("Ticker","ativo",st)}${thSort("Setor","setor",st)}${thSort("Preço","preco",st)}${thSort("PM","pm",st)}${thSort("Rent.%","rent",st)}${thSort("Qtd","qtd",st)}${thSort("Valor","valor",st)}${thSort("Part.%","part",st)}${thSort("Teto","teto",st)}${thSort("M.S.%","ms",st)}<th>DY</th></tr></thead>`;
   const body=list.map(x=>`<tr><td class="tk">${x.ativo}</td><td><span class="tag">${x.setor}</span></td><td>${fmt(x.preco)}</td><td>${fmt(x.pm)}</td>${rentCell(x.rent)}<td>${x.qtd.toLocaleString("pt-BR")}</td><td>${fmt(x.valor)}</td><td>${pct(x.part)}</td><td>${fmt(x.teto)}</td>${msCell(x.ms)}<td>—</td></tr>`).join("");
   return head+"<tbody>"+body+`<tr style="font-weight:700;border-top:2px solid var(--line)"><td>Total</td><td></td><td></td><td></td><td></td><td></td><td>${fmt(tot)}</td><td>100%</td><td></td><td></td><td></td></tr>`+"</tbody>";
 }
 function renderAcaoTable(){
   const tot=DATA.acoes.reduce((s,x)=>s+x.valor,0);
-  const m=document.getElementById("acaoTable"); if(m) m.innerHTML=acaoTableHTML(sortList(DATA.acoes,acaoSort),tot);
-  const c=document.getElementById("acaoTableCart"); if(c) c.innerHTML=acaoTableHTML(DATA.acoes.slice().sort((a,b)=>b.valor-a.valor),tot);
+  const c=document.getElementById("acaoTableCart"); if(c) c.innerHTML=acaoTableHTML(sortRows(DATA.acoes,cartAcaoSort.key,cartAcaoSort.dir),tot,cartAcaoSort);
 }
 function avg6(prov,key){const l=prov.slice(-6);const n=l.length||1;return l.reduce((s,p)=>s+(key?p[key]:(p.fii+p.acao)),0)/n;}
 function renderProvKpis(d){
@@ -648,7 +703,7 @@ function renderIndep(d){
   const fiiMes=avg6(d.prov,"fii"), acaoMes=avg6(d.prov,"acao"), totMes=fiiMes+acaoMes;
   const bar=(lbl,val,meta,cor)=>{const p=Math.min(100,meta?100*val/meta:0);
     return `<div class="prog"><div class="top"><span><b>${lbl}</b> <span style="color:var(--muted)">méd. 6m</span></span><span style="color:var(--muted)">${fmt(val)} / ${fmt0(meta)} · ${pct(p)}</span></div><div class="bar"><i style="width:${p}%;background:${cor}"></i></div></div>`;}
-  document.getElementById("metaHint").textContent="média 6m · meta "+fmt0(CONFIG.metaIndepTotal)+"/mês";
+  {const mt=document.getElementById("metaTitle"); if(mt) mt.textContent="Meta "+fmt0(CONFIG.metaIndepTotal)+"/mês";}
   document.getElementById("indep").innerHTML=
     bar("Meta Total",totMes,CONFIG.metaIndepTotal,colVar("var(--roxo)"))+
     bar("Meta FIIs",fiiMes,CONFIG.metaIndepFiis,colVar("var(--fiis)"))+
@@ -656,21 +711,111 @@ function renderIndep(d){
 }
 function renderProvTable(d){
   const best=(d.prov||[]).reduce((m,p)=>{const t=p.fii+p.acao;return t>m.t?{mes:p.mes,t}:m;},{mes:"",t:0});
-  const head=`<thead><tr><th>Período</th><th>FIIs</th><th>Ações</th><th>Total</th><th>vs ano ant.</th><th>Méd. mensal</th><th>Por dia</th></tr></thead>`;
-  const byYear={}; d.prov.forEach(p=>{const yy=p.mes.split("/")[1]; (byYear[yy]=byYear[yy]||[]).push(p);});
+  const head=`<thead><tr><th>Período</th><th>FIIs</th><th>Ações</th><th>Total</th><th>Variação</th><th>Méd. mensal</th><th>Por dia</th></tr></thead>`;
+  /* meses agrupados por ano, indexados pelo mês */
+  const byYear={}; d.prov.forEach(p=>{const a=p.mes.split("/"); (byYear[a[1]]=byYear[a[1]]||{})[a[0]]=p;});
+  /* todos os anos que tiveram algum provento (provAnos ∪ meses), em ordem crescente */
+  const yset=new Set(d.provAnos.map(a=>a.ano)); d.prov.forEach(p=>yset.add("20"+p.mes.split("/")[1]));
+  const anos=[...yset].sort().filter(ano=>{const a=d.provAnos.find(x=>x.ano===ano),yy=ano.slice(2);
+    return (a&&a.total>0)||(byYear[yy]&&Object.keys(byYear[yy]).length>0);});
+  const curYY=String(new Date().getFullYear()).slice(2);
+  anos.forEach(ano=>{const yy=ano.slice(2); if(!(yy in provOpenYears)) provOpenYears[yy]=(yy===curYY);});
   let body="";
-  d.provAnos.filter(a=>a.total>0).forEach(a=>{
-    const yy=a.ano.slice(2);
+  anos.forEach(ano=>{
+    const yy=ano.slice(2); const ms=byYear[yy]||{};
+    let a=d.provAnos.find(x=>x.ano===ano);
+    if(!a){const arr=Object.values(ms),fii=arr.reduce((s,p)=>s+p.fii,0),acao=arr.reduce((s,p)=>s+p.acao,0);
+      a={ano,fii,acao,total:fii+acao,media:arr.length?(fii+acao)/arr.length:0,dia:0,varAA:null};}
+    const open=provOpenYears[yy];
     const vs=a.varAA!=null?`<span class="${a.varAA>=0?'pos':'neg'}">${a.varAA>=0?'+':''}${pct(a.varAA)}</span>`:"—";
-    body+=`<tr style="font-weight:700;background:#F8F9FB"><td>${a.ano}</td><td>${fmt(a.fii)}</td><td>${fmt(a.acao)}</td><td>${fmt(a.total)}</td><td>${vs}</td><td>${fmt(a.media)}</td><td>${fmt(a.dia)}</td></tr>`;
-    let prevM=null;
-    (byYear[yy]||[]).forEach(p=>{const t=p.fii+p.acao; const mom=(prevM!=null&&prevM>0)?100*(t-prevM)/prevM:null; prevM=t;
-      const isBest=p.mes===best.mes; const hl=isBest?' style="background:#FEF9C3"':'';
-      const momTxt=mom!=null?`<span class="${mom>=0?'pos':'neg'}">${mom>=0?'+':''}${pct(mom)}</span>`:"—";
-      body+=`<tr${hl}><td style="padding-left:18px;color:var(--muted)">${p.mes}${isBest?' 🏆':''}</td><td>${fmt(p.fii)}</td><td>${fmt(p.acao)}</td><td style="font-weight:600">${fmt(t)}</td><td>${momTxt}</td><td></td><td></td></tr>`;
+    body+=`<tr class="prov-year" data-yy="${yy}"><td><span class="prov-caret">${open?'▾':'▸'}</span> ${a.ano}</td><td>${fmt(a.fii)}</td><td>${fmt(a.acao)}</td><td>${fmt(a.total)}</td><td>${vs}</td><td>${fmt(a.media)}</td><td>${fmt(a.dia)}</td></tr>`;
+    let prevTot=null;
+    MES12.forEach(mm=>{
+      const p=ms[mm]; const has=!!p&&((p.fii||0)>0||(p.acao||0)>0); const t=has?p.fii+p.acao:0;
+      let momTxt="—";
+      if(has&&prevTot!=null&&prevTot>0){const mom=100*(t-prevTot)/prevTot;momTxt=`<span class="${mom>=0?'pos':'neg'}">${mom>=0?'+':''}${pct(mom)}</span>`;}
+      if(has)prevTot=t;
+      const lbl=mm+"/"+yy; const isBest=has&&lbl===best.mes;
+      const sty=`display:${open?'':'none'}`+(isBest?';background:#FEF9C3':'');
+      body+=`<tr class="prov-month yr-${yy}" style="${sty}"><td style="padding-left:24px;color:var(--muted)">${lbl}${isBest?' 🏆':''}</td><td>${has?fmt(p.fii):'—'}</td><td>${has?fmt(p.acao):'—'}</td><td style="font-weight:600">${has?fmt(t):'—'}</td><td>${momTxt}</td><td></td><td></td></tr>`;
     });
   });
   document.getElementById("provTable").innerHTML=head+"<tbody>"+body+"</tbody>";
+}
+function toggleProvYear(yy){
+  provOpenYears[yy]=!provOpenYears[yy];
+  const open=provOpenYears[yy];
+  document.querySelectorAll("#provTable tr.yr-"+yy).forEach(tr=>{tr.style.display=open?"":"none";});
+  const cr=document.querySelector('#provTable tr.prov-year[data-yy="'+yy+'"] .prov-caret');
+  if(cr) cr.textContent=open?"▾":"▸";
+}
+
+/* ===== Proventos acumulados por ativo (extrato B3 — atualizar só este bloco a cada novo extrato) ===== */
+/* PROVENTOS_ATIVO_START */
+const PROV_ATIVO = {
+  updated: "23/05/2026",
+  periodo: "jul/2024 – mai/2026",
+  itens: [
+    {ticker:"TRXF11", total:1215.82, n:22, primeiro:"14/08/2024", ultimo:"15/05/2026"},
+    {ticker:"XPML11", total:858.36, n:21, primeiro:"23/08/2024", ultimo:"24/04/2026"},
+    {ticker:"CXSE3", total:602.86, n:10, primeiro:"15/08/2024", ultimo:"16/01/2026"},
+    {ticker:"BTLG11", total:560.33, n:22, primeiro:"25/07/2024", ultimo:"24/04/2026"},
+    {ticker:"RECR11", total:510.29, n:20, primeiro:"14/10/2024", ultimo:"15/05/2026"},
+    {ticker:"BBSE3", total:468.38, n:6, primeiro:"30/08/2024", ultimo:"02/03/2026"},
+    {ticker:"HGCR11", total:455.15, n:16, primeiro:"14/02/2025", ultimo:"15/05/2026"},
+    {ticker:"VALE3", total:428.36, n:7, primeiro:"04/09/2024", ultimo:"04/03/2026"},
+    {ticker:"BBAS3", total:391.57, n:19, primeiro:"30/08/2024", ultimo:"11/03/2026"},
+    {ticker:"ISAE4", total:331.37, n:12, primeiro:"21/01/2025", ultimo:"29/04/2026"},
+    {ticker:"RBRR11", total:279.45, n:14, primeiro:"16/04/2025", ultimo:"19/05/2026"},
+    {ticker:"HGRU11", total:184.05, n:15, primeiro:"18/03/2025", ultimo:"15/05/2026"},
+    {ticker:"TAEE11", total:173.02, n:9, primeiro:"29/01/2025", ultimo:"28/01/2026"},
+    {ticker:"RBRP11", total:147.20, n:12, primeiro:"14/04/2025", ultimo:"13/03/2026"},
+    {ticker:"ITUB4", total:119.02, n:29, primeiro:"02/09/2024", ultimo:"04/05/2026"},
+    {ticker:"VGIR11", total:107.71, n:6, primeiro:"17/12/2025", ultimo:"20/05/2026"},
+    {ticker:"VILG11", total:70.07, n:14, primeiro:"14/02/2025", ultimo:"13/03/2026"},
+    {ticker:"CPLE3", total:32.42, n:1, primeiro:"19/01/2026", ultimo:"19/01/2026"},
+    {ticker:"BBDC4", total:29.78, n:7, primeiro:"03/11/2025", ultimo:"30/04/2026"},
+    {ticker:"KLBN11", total:24.06, n:6, primeiro:"15/08/2024", ultimo:"19/08/2025"},
+    {ticker:"AURE3", total:11.12, n:1, primeiro:"05/05/2025", ultimo:"05/05/2025"},
+    {ticker:"CSMG3", total:2.51, n:2, primeiro:"26/12/2025", ultimo:"26/12/2025"},
+  ],
+};
+/* PROVENTOS_ATIVO_END */
+function renderProvAtivo(){
+  const grid=document.getElementById("provAtivoCards"); if(!grid||!DATA) return;
+  /* só ativos que ainda estão na carteira (ignora o que foi vendido) */
+  const hold={};
+  (DATA.fiis||[]).forEach(x=>hold[x.ativo]={setor:x.setor,classe:"FII"});
+  (DATA.acoes||[]).forEach(x=>hold[x.ativo]={setor:x.setor,classe:"Ação"});
+  let list=(PROV_ATIVO.itens||[]).filter(x=>hold[x.ticker]);
+  const s=provAtivoSort;
+  if(s==="totalLo") list.sort((a,b)=>a.total-b.total);
+  else if(s==="nHi") list.sort((a,b)=>(b.n-a.n)||(b.total-a.total));
+  else if(s==="az") list.sort((a,b)=>a.ticker.localeCompare(b.ticker,"pt-BR"));
+  else list.sort((a,b)=>b.total-a.total);
+  const soma=list.reduce((t,x)=>t+x.total,0)||1;
+  const max=list.reduce((m,x)=>Math.max(m,x.total),0)||1;
+  const h=document.getElementById("provAtivoHint");
+  if(h) h.textContent=fmt(soma)+" acumulados · "+PROV_ATIVO.periodo+" · "+list.length+" ativos · extrato "+PROV_ATIVO.updated;
+  const money=v=>(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  const colorOf=t=>ACAO_COLORS[t]||FII_COLORS[t]||tkColor(t);
+  const shortDt=d=>{const p=(d||"").split("/");return p.length===3?p[0]+"/"+p[1]+"/"+p[2].slice(2):d;};
+  grid.innerHTML=list.map(x=>{
+    const code=x.ticker.replace(/\d+$/,""); const hd=hold[x.ticker];
+    const medio=x.n?x.total/x.n:0; const share=100*x.total/soma; const w=Math.max(4,Math.round(100*x.total/max)); const col=colorOf(x.ticker);
+    return `<div class="fcard">
+      <div class="tk2">${x.ticker}</div><div class="seg">${hd.setor} · ${hd.classe}</div>
+      <div class="prow"><div class="badge" style="background:${col}">${code}</div>
+        <div><div class="price"><small>R$</small>${money(x.total)}</div>
+        <div class="chg" style="color:var(--muted)">${x.n} ${x.n===1?'pagamento':'pagamentos'}</div></div></div>
+      <div class="stats">
+        <div class="stat"><div class="l">Médio</div><div class="v">R$ ${money(medio)}</div></div>
+        <div class="stat"><div class="l">% recebido</div><div class="v">${pct(share)}</div></div>
+        <div class="stat"><div class="l">Último</div><div class="v">${shortDt(x.ultimo)}</div></div>
+      </div>
+      <div class="tetobar"><i style="width:${w}%;background:${col}"></i></div>
+    </div>`;
+  }).join("")||`<div class="sub" style="color:var(--muted)">Sem proventos para os ativos da carteira atual.</div>`;
 }
 function renderAlerts(d,acaoSet){
   const all=d.fiis.map(x=>({...x,cls:"FII"})).concat(d.acoes.map(x=>({...x,cls:"Ação"})));
@@ -930,7 +1075,7 @@ function setupRegistro(){
 
 /* ===== Aportes realizados (extrato B3; atualizar este bloco ao reprocessar) ===== */
 /* REAL_START */
-const REALIZADOS_BASE = {"mensalBase":[{"sk":"2024-06","mes":"Jun/24","ano":"2024","ca":0.0,"cf":0.0,"cr":447.6,"tv":1000.0},{"sk":"2024-07","mes":"Jul/24","ano":"2024","ca":4512.83,"cf":5501.43,"cr":0.0,"tv":449.73},{"sk":"2024-08","mes":"Ago/24","ano":"2024","ca":4832.37,"cf":2273.03,"cr":0.0,"tv":0.0},{"sk":"2024-09","mes":"Set/24","ano":"2024","ca":4469.49,"cf":3549.39,"cr":0.0,"tv":0.0},{"sk":"2024-10","mes":"Out/24","ano":"2024","ca":2041.36,"cf":2388.32,"cr":0.0,"tv":0.0},{"sk":"2024-12","mes":"Dez/24","ano":"2024","ca":247.55,"cf":97.94,"cr":0.0,"tv":0.0},{"sk":"2025-01","mes":"Jan/25","ano":"2025","ca":1673.13,"cf":1974.4,"cr":0.0,"tv":0.0},{"sk":"2025-02","mes":"Fev/25","ano":"2025","ca":0.0,"cf":2622.85,"cr":0.0,"tv":0.0},{"sk":"2025-03","mes":"Mar/25","ano":"2025","ca":1696.78,"cf":0.0,"cr":0.0,"tv":0.0},{"sk":"2025-04","mes":"Abr/25","ano":"2025","ca":1001.2,"cf":2239.23,"cr":0.0,"tv":0.0},{"sk":"2025-05","mes":"Mai/25","ano":"2025","ca":0.0,"cf":1079.28,"cr":0.0,"tv":0.0},{"sk":"2025-06","mes":"Jun/25","ano":"2025","ca":1230.9,"cf":0.0,"cr":0.0,"tv":0.0},{"sk":"2025-07","mes":"Jul/25","ano":"2025","ca":1823.99,"cf":2065.4,"cr":1081.88,"tv":0.0},{"sk":"2025-08","mes":"Ago/25","ano":"2025","ca":729.2,"cf":0.0,"cr":0.0,"tv":0.0},{"sk":"2025-09","mes":"Set/25","ano":"2025","ca":2890.9,"cf":1037.22,"cr":0.0,"tv":328.14},{"sk":"2025-10","mes":"Out/25","ano":"2025","ca":120.61,"cf":336.96,"cr":0.0,"tv":0.0},{"sk":"2025-11","mes":"Nov/25","ano":"2025","ca":1656.65,"cf":4067.05,"cr":0.0,"tv":0.0},{"sk":"2025-12","mes":"Dez/25","ano":"2025","ca":168.64,"cf":364.16,"cr":0.0,"tv":0.0},{"sk":"2026-01","mes":"Jan/26","ano":"2026","ca":161.97,"cf":1627.21,"cr":0.0,"tv":0.0},{"sk":"2026-02","mes":"Fev/26","ano":"2026","ca":908.21,"cf":3012.0,"cr":0.0,"tv":8118.5},{"sk":"2026-03","mes":"Mar/26","ano":"2026","ca":11996.6,"cf":98.0,"cr":0.0,"tv":12498.94},{"sk":"2026-04","mes":"Abr/26","ano":"2026","ca":10024.26,"cf":1009.69,"cr":0.0,"tv":3045.76},{"sk":"2026-05","mes":"Mai/26","ano":"2026","ca":164.48,"cf":0.0,"cr":3044.91,"tv":0.0}],"tickerAno":{"2024":{"AURE3":2231.14,"BBAS3":4409.89,"BBSE3":824.38,"BTLG11":3437.23,"CXSE3":3486.47,"ITUB4":356.73,"KLBN11":375.84,"RECR11":877.58,"TAEE11":995.28,"TESOURO":447.6,"TRPL4":995.48,"TRXF11":5060.57,"VALE3":2428.39,"XPML11":4434.73},"2025":{"BBAS3":476.97,"BBDC4":1617.49,"BBSE3":1581.55,"CPLE6":1280.29,"CSMG3":191.3,"CXSE3":2799.7,"HGCR11":3443.85,"HGRU11":1507.5,"ISAE4":2089.62,"ITUB4":562.31,"LCA":1081.88,"RBRP11":2174.69,"RBRR11":3004.92,"RECR11":1589.42,"SAPR11":639.52,"TAEE11":752.05,"TRXF11":1010.7,"VALE3":1001.2,"VGIR11":961.92,"VILG11":502.6,"XPML11":1590.95},"2026":{"BBAS3":3799.15,"BBSE3":6180.45,"CDB":3044.91,"CPLE3":92.96,"CXSE3":1321.6,"HGCR11":971.1,"ISAE4":3472.41,"ITUB4":3857.75,"RBRP11":982.96,"SAPR11":1011.75,"TAEE11":3519.45,"TRXF11":3107.43,"VGIR11":685.41}}};
+const REALIZADOS_BASE = {"mensalBase":[{"sk":"2024-06","mes":"Jun/24","ano":"2024","ca":0.0,"cf":0.0,"cr":447.6,"tv":1000.0},{"sk":"2024-07","mes":"Jul/24","ano":"2024","ca":4512.83,"cf":5501.43,"cr":0.0,"tv":449.73},{"sk":"2024-08","mes":"Ago/24","ano":"2024","ca":4832.37,"cf":2273.03,"cr":0.0,"tv":0.0},{"sk":"2024-09","mes":"Set/24","ano":"2024","ca":4469.49,"cf":3549.39,"cr":0.0,"tv":0.0},{"sk":"2024-10","mes":"Out/24","ano":"2024","ca":2041.36,"cf":2388.32,"cr":0.0,"tv":0.0},{"sk":"2024-12","mes":"Dez/24","ano":"2024","ca":247.55,"cf":97.94,"cr":0.0,"tv":0.0},{"sk":"2025-01","mes":"Jan/25","ano":"2025","ca":1673.13,"cf":1974.4,"cr":0.0,"tv":0.0},{"sk":"2025-02","mes":"Fev/25","ano":"2025","ca":0.0,"cf":2622.85,"cr":0.0,"tv":0.0},{"sk":"2025-03","mes":"Mar/25","ano":"2025","ca":1696.78,"cf":0.0,"cr":0.0,"tv":0.0},{"sk":"2025-04","mes":"Abr/25","ano":"2025","ca":1001.2,"cf":2239.23,"cr":0.0,"tv":0.0},{"sk":"2025-05","mes":"Mai/25","ano":"2025","ca":0.0,"cf":1079.28,"cr":0.0,"tv":0.0},{"sk":"2025-06","mes":"Jun/25","ano":"2025","ca":1230.9,"cf":0.0,"cr":0.0,"tv":0.0},{"sk":"2025-07","mes":"Jul/25","ano":"2025","ca":1823.99,"cf":2065.4,"cr":1081.88,"tv":0.0},{"sk":"2025-08","mes":"Ago/25","ano":"2025","ca":729.2,"cf":0.0,"cr":0.0,"tv":0.0},{"sk":"2025-09","mes":"Set/25","ano":"2025","ca":2890.9,"cf":1037.22,"cr":0.0,"tv":328.14},{"sk":"2025-10","mes":"Out/25","ano":"2025","ca":120.61,"cf":336.96,"cr":0.0,"tv":0.0},{"sk":"2025-11","mes":"Nov/25","ano":"2025","ca":1656.65,"cf":4067.05,"cr":0.0,"tv":0.0},{"sk":"2025-12","mes":"Dez/25","ano":"2025","ca":168.64,"cf":364.16,"cr":0.0,"tv":0.0},{"sk":"2026-01","mes":"Jan/26","ano":"2026","ca":161.97,"cf":1627.21,"cr":0.0,"tv":0.0},{"sk":"2026-02","mes":"Fev/26","ano":"2026","ca":908.21,"cf":3012.0,"cr":0.0,"tv":8118.5},{"sk":"2026-03","mes":"Mar/26","ano":"2026","ca":11996.6,"cf":98.0,"cr":0.0,"tv":12498.94},{"sk":"2026-04","mes":"Abr/26","ano":"2026","ca":10024.26,"cf":1009.69,"cr":0.0,"tv":3045.76},{"sk":"2026-05","mes":"Mai/26","ano":"2026","ca":164.48,"cf":0.0,"cr":3044.91,"tv":0.0}],"tickerAno":{"2024":{"AURE3":2231.14,"BBAS3":4409.89,"BBSE3":824.38,"BTLG11":3437.23,"CXSE3":3486.47,"ITUB4":356.73,"KLBN11":375.84,"RECR11":877.58,"TAEE11":995.28,"TRPL4":995.48,"TRXF11":5060.57,"VALE3":2428.39,"XPML11":4434.73},"2025":{"BBAS3":476.97,"BBDC4":1617.49,"BBSE3":1581.55,"CPLE6":1280.29,"CSMG3":191.3,"CXSE3":2799.7,"HGCR11":3443.85,"HGRU11":1507.5,"ISAE4":2089.62,"ITUB4":562.31,"LCA":1081.88,"RBRP11":2174.69,"RBRR11":3004.92,"RECR11":1589.42,"SAPR11":639.52,"TAEE11":752.05,"TRXF11":1010.7,"VALE3":1001.2,"VGIR11":961.92,"VILG11":502.6,"XPML11":1590.95},"2026":{"BBAS3":3799.15,"BBSE3":6180.45,"CDB":3044.91,"CPLE3":92.96,"CXSE3":1321.6,"HGCR11":971.1,"ISAE4":3472.41,"ITUB4":3857.75,"RBRP11":982.96,"SAPR11":1011.75,"TAEE11":3519.45,"TRXF11":3107.43,"VGIR11":685.41}}};
 let MOVS=[];
 /* REAL_END */
 function parseMovs(rowsArr){
@@ -1012,6 +1157,15 @@ function setupTabs(){
   document.querySelectorAll("#acaoFilters button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("#acaoFilters button").forEach(x=>x.classList.remove("active"));b.classList.add("active");acaoSort=b.dataset.sort;renderAcaoTable();}));
   const fsel=document.getElementById("fiiSortSel"); if(fsel) fsel.addEventListener("change",e=>{fiiSort=e.target.value;renderFiiCards();});
   const asel=document.getElementById("acaoSortSel"); if(asel) asel.addEventListener("change",e=>{acaoSort=e.target.value;renderAcaoCards();});
+  /* clique nas colunas das tabelas Ações/FIIs da aba Carteira */
+  const onHeadClick=(st,rerender)=>e=>{const th=e.target.closest("th.sortable"); if(!th) return; const k=th.dataset.key;
+    if(st.key===k) st.dir=st.dir==="desc"?"asc":"desc"; else { st.key=k; st.dir=TEXT_KEYS[k]?"asc":"desc"; }
+    rerender();};
+  const fc=document.getElementById("fiiTableCart"); if(fc) fc.addEventListener("click",onHeadClick(cartFiiSort,renderFiiTable));
+  const ac=document.getElementById("acaoTableCart"); if(ac) ac.addEventListener("click",onHeadClick(cartAcaoSort,renderAcaoTable));
+  /* clique nos anos da aba Proventos para expandir/recolher os meses */
+  const pt=document.getElementById("provTable"); if(pt) pt.addEventListener("click",e=>{const yr=e.target.closest("tr.prov-year"); if(yr) toggleProvYear(yr.dataset.yy);});
+  const pas=document.getElementById("provAtivoSortSel"); if(pas) pas.addEventListener("change",e=>{provAtivoSort=e.target.value;renderProvAtivo();});
 }
 function setDate(){const now=new Date();
   document.getElementById("wd").textContent=now.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
