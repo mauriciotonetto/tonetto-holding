@@ -72,8 +72,8 @@
   thead th.sortable:hover{color:var(--ink)}
   thead th.sorted{color:var(--ink)}
   thead th .arr{display:inline-block;width:8px;font-size:9px;margin-left:3px;color:var(--roxo)}
-  tr.prov-year{cursor:pointer;font-weight:700;background:#F8F9FB;user-select:none;-webkit-user-select:none}
-  tr.prov-year:hover{background:#EEF1F6}
+  tr.prov-year,tr.real-year{cursor:pointer;font-weight:700;background:#F8F9FB;user-select:none;-webkit-user-select:none}
+  tr.prov-year:hover,tr.real-year:hover{background:#EEF1F6}
   .prov-caret{display:inline-block;width:12px;color:var(--roxo);font-size:10px}
   tbody tr{border-bottom:1px solid #F1F2F5}
   tbody tr:last-child{border-bottom:none}
@@ -283,19 +283,9 @@
 
   <!-- ABA APORTES -->
   <section data-panel="aportes" class="hide">
-    <div class="sec-title" style="margin-top:4px">Aportes realizados <span style="font-weight:500;color:var(--muted);font-size:12px" id="realPeriodo"></span></div>
-    <div class="grid" id="realKpis" style="grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px"></div>
-    <div class="grid" style="grid-template-columns:1.3fr 1fr;gap:16px;margin-bottom:16px">
-      <div class="card"><div class="panel-h">Compras vs Vendas — mensal</div><div class="chart-box"><canvas id="realMensalChart"></canvas></div></div>
-      <div class="card"><div class="panel-h">Compras por classe</div><div class="chart-box"><canvas id="realClasseChart"></canvas></div><div class="legendrow" id="realClasseLeg"></div></div>
-    </div>
-    <div class="sec-title">Ativo mais comprado — por ano</div>
-    <div class="grid three" id="realTop" style="margin-bottom:16px"></div>
-    <div class="card" style="overflow-x:auto;margin-bottom:22px"><div class="panel-h">Movimentação mensal — compras e vendas</div><table id="realTable"></table></div>
-    <p class="note" style="margin-top:0;margin-bottom:22px">Fonte: extrato de movimentação da B3 (jun/2024 – mai/2026). Para atualizar, exporte um novo extrato na Área do Investidor da B3 e me envie.</p>
-    <div style="border-top:1px solid var(--line);margin-bottom:18px"></div>
     <div class="sec-title" style="margin-top:4px">Plano de Aportes <span style="font-weight:500;color:var(--muted);font-size:12px" id="aporteHint"></span></div>
     <div class="grid" id="aporteKpis" style="grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px"></div>
+
     <div class="sec-title">Meus Aportes — registro <span style="font-weight:500;color:var(--muted);font-size:12px">lance cada aporte; soma e salva automaticamente</span></div>
     <div class="card" style="margin-bottom:16px">
       <div class="aporte-form">
@@ -310,18 +300,32 @@
       <div id="apResumo" style="margin-top:16px"></div>
       <div id="apHist" style="overflow-x:auto"></div>
     </div>
-    <div class="grid three" style="margin-bottom:16px">
-      <div class="card"><div class="panel-h">Aporte mensal planejado <span class="hint">jun–dez</span></div><div class="chart-box sm"><canvas id="aporteMensalChart"></canvas></div></div>
-      <div class="card"><div class="panel-h">Aporte por classe</div><div class="chart-box sm"><canvas id="aporteClasseChart"></canvas></div><div class="legendrow" id="aporteClasseLeg"></div></div>
-      <div class="card"><div class="panel-h">Composição: hoje → alvo</div><div id="aporteAlvo"></div></div>
-    </div>
+
     <div class="sec-title">Onde aportar — ranking por ativo <span style="font-weight:500;color:var(--muted);font-size:12px">proporcional à Margem de Segurança</span></div>
     <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
       <div class="card"><div class="panel-h">Ações <span class="hint" id="aporteAcaoTot"></span></div><div id="aporteAcaoRank"></div></div>
       <div class="card"><div class="panel-h">FIIs <span class="hint" id="aporteFiiTot"></span></div><div id="aporteFiiRank"></div></div>
     </div>
-    <div class="card" style="overflow-x:auto"><div class="panel-h">Programação mensal — Jun a Dez</div><table id="aporteTable"></table></div>
-    <p class="note">Plano forward-looking calculado ao vivo da planilha (gap até a meta, regra de Margem de Segurança). Não é histórico de transações nem recomendação de investimento.</p>
+
+    <div class="grid three" style="margin-bottom:16px">
+      <div class="card"><div class="panel-h">Aporte mensal planejado <span class="hint">jun–dez</span></div><div class="chart-box sm"><canvas id="aporteMensalChart"></canvas></div></div>
+      <div class="card"><div class="panel-h">Aporte por classe</div><div class="chart-box sm"><canvas id="aporteClasseChart"></canvas></div><div class="legendrow" id="aporteClasseLeg"></div></div>
+      <div class="card"><div class="panel-h">Composição: hoje → alvo</div><div id="aporteAlvo"></div></div>
+    </div>
+
+    <div class="card" style="overflow-x:auto;margin-bottom:22px"><div class="panel-h">Programação mensal — Jun a Dez</div><table id="aporteTable"></table></div>
+    <p class="note" style="margin-top:0;margin-bottom:22px">Plano forward-looking calculado ao vivo da planilha (gap até a meta, regra de Margem de Segurança). Não é histórico de transações nem recomendação de investimento.</p>
+
+    <div style="border-top:1px solid var(--line);margin-bottom:18px"></div>
+
+    <div class="sec-title" style="margin-top:4px">Aportes realizados <span style="font-weight:500;color:var(--muted);font-size:12px" id="realPeriodo"></span></div>
+    <div class="grid" id="realKpis" style="grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px"></div>
+
+    <div class="sec-title">Ativo mais comprado — por ano</div>
+    <div class="grid three" id="realTop" style="margin-bottom:16px"></div>
+
+    <div class="card" style="overflow-x:auto"><div class="panel-h">Movimentação mensal — compras e vendas <span class="hint">clique no ano para abrir/fechar</span></div><table id="realTable"></table></div>
+    <p class="note">Fonte: extrato de movimentação da B3 (jun/2024 – mai/2026). Para atualizar, exporte um novo extrato na Área do Investidor da B3 e me envie.</p>
   </section>
 
   <!-- ABA META 2026 -->
@@ -515,6 +519,8 @@ const TEXT_KEYS={ativo:1,setor:1};
 let provOpenYears={};
 /* aba Proventos: ordenação da seção "por ativo" */
 let provAtivoSort="totalHi";
+/* aba Aportes: anos expandidos na Movimentação mensal (ano -> bool) */
+let realOpenYears={};
 function sortRows(list,key,dir){
   const a=list.slice();
   a.sort((x,y)=>{
@@ -1123,13 +1129,22 @@ function renderRealizados(){
   const tb=document.getElementById("realTable");
   if(tb){ const head=`<thead><tr><th>Mês</th><th>Ações</th><th>%</th><th>FIIs</th><th>%</th><th>RF</th><th>%</th><th>Compras</th><th>Vendas</th><th>Líquido</th></tr></thead>`;
     const anos=[...new Set(R.mensal.map(m=>m.ano))]; const pc=(v,t)=>t?pct(100*v/t):"—"; let body="";
-    anos.forEach(ano=>{const ms=R.mensal.filter(m=>m.ano===ano);
+    const curY=String(new Date().getFullYear());
+    anos.forEach(ano=>{ if(!(ano in realOpenYears)) realOpenYears[ano]=(ano===curY); });
+    anos.forEach(ano=>{const ms=R.mensal.filter(m=>m.ano===ano); const open=realOpenYears[ano];
       const sca=ms.reduce((s,m)=>s+m.ca,0),scf=ms.reduce((s,m)=>s+m.cf,0),scr=ms.reduce((s,m)=>s+m.cr,0),stc=ms.reduce((s,m)=>s+m.tc,0),stv=ms.reduce((s,m)=>s+m.tv,0);
-      body+=`<tr style="font-weight:700;background:#F8F9FB"><td>${ano}</td><td>${fmt(sca)}</td><td>${pc(sca,stc)}</td><td>${fmt(scf)}</td><td>${pc(scf,stc)}</td><td>${fmt(scr)}</td><td>${pc(scr,stc)}</td><td>${fmt(stc)}</td><td>${stv?fmt(stv):"—"}</td><td class="${stc-stv>=0?'pos':'neg'}">${fmt(stc-stv)}</td></tr>`;
-      ms.forEach(m=>{body+=`<tr><td style="padding-left:16px;color:var(--muted)">${m.mes}</td><td>${m.ca?fmt(m.ca):"—"}</td><td>${m.tc?pc(m.ca,m.tc):"—"}</td><td>${m.cf?fmt(m.cf):"—"}</td><td>${m.tc?pc(m.cf,m.tc):"—"}</td><td>${m.cr?fmt(m.cr):"—"}</td><td>${m.tc?pc(m.cr,m.tc):"—"}</td><td style="font-weight:600">${fmt(m.tc)}</td><td>${m.tv?`<span class="neg">${fmt(m.tv)}</span>`:"—"}</td><td class="${m.liq>=0?'pos':'neg'}">${fmt(m.liq)}</td></tr>`;});
+      body+=`<tr class="real-year" data-yr="${ano}"><td><span class="prov-caret">${open?'▾':'▸'}</span> ${ano}</td><td>${fmt(sca)}</td><td>${pc(sca,stc)}</td><td>${fmt(scf)}</td><td>${pc(scf,stc)}</td><td>${fmt(scr)}</td><td>${pc(scr,stc)}</td><td>${fmt(stc)}</td><td>${stv?fmt(stv):"—"}</td><td class="${stc-stv>=0?'pos':'neg'}">${fmt(stc-stv)}</td></tr>`;
+      ms.forEach(m=>{body+=`<tr class="real-month ry-${ano}" style="display:${open?'':'none'}"><td style="padding-left:24px;color:var(--muted)">${m.mes}</td><td>${m.ca?fmt(m.ca):"—"}</td><td>${m.tc?pc(m.ca,m.tc):"—"}</td><td>${m.cf?fmt(m.cf):"—"}</td><td>${m.tc?pc(m.cf,m.tc):"—"}</td><td>${m.cr?fmt(m.cr):"—"}</td><td>${m.tc?pc(m.cr,m.tc):"—"}</td><td style="font-weight:600">${fmt(m.tc)}</td><td>${m.tv?`<span class="neg">${fmt(m.tv)}</span>`:"—"}</td><td class="${m.liq>=0?'pos':'neg'}">${fmt(m.liq)}</td></tr>`;});
     });
     tb.innerHTML=head+"<tbody>"+body+"</tbody>";
   }
+}
+function toggleRealYear(yr){
+  realOpenYears[yr]=!realOpenYears[yr];
+  const open=realOpenYears[yr];
+  document.querySelectorAll("#realTable tr.ry-"+yr).forEach(tr=>{tr.style.display=open?"":"none";});
+  const cr=document.querySelector('#realTable tr.real-year[data-yr="'+yr+'"] .prov-caret');
+  if(cr) cr.textContent=open?"▾":"▸";
 }
 function drawRealizadosCharts(){
   const R=computeRealizados();
@@ -1166,6 +1181,7 @@ function setupTabs(){
   /* clique nos anos da aba Proventos para expandir/recolher os meses */
   const pt=document.getElementById("provTable"); if(pt) pt.addEventListener("click",e=>{const yr=e.target.closest("tr.prov-year"); if(yr) toggleProvYear(yr.dataset.yy);});
   const pas=document.getElementById("provAtivoSortSel"); if(pas) pas.addEventListener("change",e=>{provAtivoSort=e.target.value;renderProvAtivo();});
+  const rt=document.getElementById("realTable"); if(rt) rt.addEventListener("click",e=>{const yr=e.target.closest("tr.real-year"); if(yr) toggleRealYear(yr.dataset.yr);});
 }
 function setDate(){const now=new Date();
   document.getElementById("wd").textContent=now.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
