@@ -313,6 +313,7 @@
   <!-- ABA META 2026 -->
   <section data-panel="meta2026" class="hide">
     <div class="grid kpis" id="metaKpis"></div>
+    <div class="card" style="margin-bottom:16px"><div class="panel-h">Progresso de Aportes 2026 <span class="hint">realizado vs plano do ano</span></div><div id="metaAporteProg"></div><div id="metaAporteMensal" style="margin-top:14px"></div></div>
     <div class="card" style="margin-bottom:16px"><div class="panel-h">Trajetória até R$150 mil <span class="hint">aportes mensais · mercado estável</span></div><div class="chart-box tall"><canvas id="metaProj"></canvas></div></div>
     <div class="card" style="margin-bottom:16px"><div class="panel-h">Aporte mensal por classe <span class="hint">só Ações + FIIs</span></div><div id="metaSplit"></div></div>
     <div class="card" style="margin-bottom:16px"><div class="panel-h">Onde aportar — valor exato por ativo <span class="hint">proporcional à Margem de Segurança</span></div><div id="metaPref" style="overflow-x:auto"></div></div>
@@ -884,6 +885,74 @@ function computePlan(d){
   gA=gap*gA/s; gF=gap*gF/s; const div=monthsLeft>0?monthsLeft:1;
   return {meta,pat,monthsLeft,gap,mensal:gap/div,gAcoes:gA,gFiis:gF,mAcoes:gA/div,mFiis:gF/div,acoesAtual,fiisAtual,acoesAlvo,fiisAlvo};
 }
+function renderMetaAporteProg(d,P){
+  const el=document.getElementById("metaAporteProg"); if(!el) return;
+  const R=computeRealizados();
+  const yr=String(new Date().getFullYear());
+  const curMonth=new Date().getMonth(); // 0-11
+  const mesesPassados=curMonth+1;
+  /* registro localStorage do usuário (Meus Aportes) */
+  let regList=[]; try{ regList=apLoad()||[]; }catch(e){}
+  const regAcoes2026=regList.filter(x=>x.classe==="Ações").reduce((s,x)=>s+x.valor,0);
+  const regFiis2026=regList.filter(x=>x.classe==="FIIs").reduce((s,x)=>s+x.valor,0);
+  const regTot2026=regAcoes2026+regFiis2026;
+  /* realizado em 2026 (REALIZADOS_BASE): só Ações + FIIs (sem RF) */
+  const ms2026=R.mensal.filter(m=>m.ano===yr);
+  const compAcoes=ms2026.reduce((s,m)=>s+m.ca,0);
+  const compFiis=ms2026.reduce((s,m)=>s+m.cf,0);
+  const compTot=compAcoes+compFiis;
+  const vendas=ms2026.reduce((s,m)=>s+m.tv,0);
+  const liquido=compTot-vendas;
+  /* plano do ano: precisa aportar (meta − patrimônio inicial), distribuído em 12 meses */
+  const patIni=(d.equity&&d.equity[0])?d.equity[0].valor:P.pat;
+  const aporteAno=Math.max(0,P.meta-patIni);
+  const planoMensal=aporteAno/12;
+  const planoAteHoje=planoMensal*mesesPassados;
+  const ritmo=planoAteHoje>0?(compTot/planoAteHoje)*100:0;
+  const cor=ritmo>=100?"var(--verde)":ritmo>=70?"var(--ambar)":"var(--vermelho)";
+  const corLiq=planoAteHoje>0?((liquido/planoAteHoje)*100>=70?"var(--verde)":"var(--ambar)"):"var(--muted)";
+  const ritmoLiq=planoAteHoje>0?Math.max(0,(liquido/planoAteHoje)*100):0;
+  el.innerHTML=
+    `<div class="prog">
+      <div class="top"><span><b>Aportes brutos 2026</b> <span style="color:var(--muted)">Ações + FIIs (sem RF)</span></span><span style="color:var(--muted)">${fmt(compTot)} / ${fmt(planoAteHoje)} · <b style="color:${colVar(cor)}">${pct(ritmo)}</b></span></div>
+      <div class="bar"><i style="width:${Math.min(100,ritmo)}%;background:${colVar(cor)}"></i></div>
+    </div>
+    <div class="prog">
+      <div class="top"><span><b>Líquido</b> <span style="color:var(--muted)">compras − vendas</span></span><span style="color:var(--muted)">${fmt(liquido)} / ${fmt(planoAteHoje)} · <b style="color:${colVar(corLiq)}">${pct(ritmoLiq)}</b></span></div>
+      <div class="bar"><i style="width:${Math.min(100,ritmoLiq)}%;background:${colVar(corLiq)}"></i></div>
+    </div>
+    <div class="sub" style="margin-top:10px;line-height:1.6">
+      <b>Plano do ano:</b> ${fmt(aporteAno)} (${fmt(planoMensal)}/mês × 12). Esperado até <b>${MES12[curMonth]}/${yr.slice(2)}</b>: <b>${fmt(planoAteHoje)}</b>.<br>
+      ${regTot2026>0?`<b>Meus Aportes (registro manual):</b> ${fmt(regTot2026)} — Ações ${fmt(regAcoes2026)} · FIIs ${fmt(regFiis2026)}.<br>`:''}
+      <b>Saldo até a meta:</b> ${fmt(P.gap)} em <b>${P.monthsLeft}</b> meses → <b>${fmt(P.mensal)}/mês</b> daqui pra frente.
+    </div>`;
+  /* breakdown mensal */
+  const mes=document.getElementById("metaAporteMensal"); if(!mes) return;
+  const meses12=MES12.map((mm,i)=>{
+    const m=ms2026.find(x=>x.sk===`${yr}-${String(i+1).padStart(2,'0')}`);
+    const comp=m?m.ca+m.cf:0; const vend=m?m.tv:0; const passou=i<=curMonth;
+    return {mm,i,comp,vend,passou};
+  });
+  const maxBar=Math.max(planoMensal,...meses12.map(x=>x.comp))||1;
+  mes.innerHTML=`<div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--label);font-weight:600;margin-bottom:8px">Mês a mês — barra cinza = plano (${fmt(planoMensal)}), cor = realizado</div>`+
+    meses12.map(x=>{
+      const wPlano=Math.round(100*planoMensal/maxBar);
+      const wReal=Math.round(100*x.comp/maxBar);
+      const ok=x.comp>=planoMensal*0.95;
+      const cor2=!x.passou?"#D1D5DB":ok?colVar("var(--verde)"):x.comp>0?colVar("var(--ambar)"):colVar("var(--vermelho)");
+      const lbl=x.passou?(x.comp>0?fmt(x.comp):"—"):"";
+      const pctMes=x.passou&&planoMensal?Math.round(100*x.comp/planoMensal):null;
+      return `<div style="display:grid;grid-template-columns:64px 1fr 130px;gap:10px;align-items:center;margin:4px 0;font-size:12px">
+        <div style="color:${x.passou?'var(--ink)':'var(--muted)'};font-weight:${x.passou?'600':'400'}">${x.mm}/${yr.slice(2)}</div>
+        <div style="position:relative;height:14px;background:#F1F3F7;border-radius:4px;overflow:hidden">
+          <div style="position:absolute;left:0;top:0;height:100%;width:${wPlano}%;background:#D1D5DB"></div>
+          <div style="position:absolute;left:0;top:0;height:100%;width:${wReal}%;background:${cor2};opacity:.92"></div>
+        </div>
+        <div style="text-align:right;color:var(--muted)">${lbl}${pctMes!==null?` <b style="color:${cor2}">${pctMes}%</b>`:''}</div>
+      </div>`;
+    }).join("");
+}
+
 function renderMeta2026(d){
   const P=computePlan(d), done=P.gap<=0;
   const kpis=[
@@ -894,6 +963,7 @@ function renderMeta2026(d){
     {label:"Aporte por mês",value:done?"—":fmt(P.mensal),sub:"mercado estável",color:"var(--roxo)"},
   ];
   document.getElementById("metaKpis").innerHTML=kpis.map(k=>`<div class="card kpi"><div class="label">${k.label}</div><div class="value" style="color:${colVar(k.color)}">${k.value}</div><div class="sub">${k.sub}</div></div>`).join("");
+  renderMetaAporteProg(d,P);
   const splitRow=(nm,mes,tot,cor,atual,alvo)=>`<div class="prog"><div class="top"><span><b>${nm}</b> <span style="color:var(--muted)">${fmt(mes)}/mês · total ${fmt(tot)}</span></span><span style="color:var(--muted)">${fmt(atual)} → ${fmt(alvo)}</span></div><div class="mini-bar"><i style="width:${Math.min(100,alvo?100*atual/alvo:0)}%;background:${cor}"></i></div></div>`;
   document.getElementById("metaSplit").innerHTML=
     splitRow("Ações",P.mAcoes,P.gAcoes,colVar("var(--acoes)"),P.acoesAtual,P.acoesAlvo)+
