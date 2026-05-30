@@ -267,19 +267,10 @@
 
   <!-- ABA APORTES -->
   <section data-panel="aportes" class="hide">
-    <div class="sec-title" style="margin-top:4px">Aportes realizados <span style="font-weight:500;color:var(--muted);font-size:12px" id="realPeriodo"></span></div>
-    <div class="grid" id="realKpis" style="grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px"></div>
-    <div class="grid" style="grid-template-columns:1.3fr 1fr;gap:16px;margin-bottom:16px">
-      <div class="card"><div class="panel-h">Compras vs Vendas — mensal</div><div class="chart-box"><canvas id="realMensalChart"></canvas></div></div>
-      <div class="card"><div class="panel-h">Compras por classe</div><div class="chart-box"><canvas id="realClasseChart"></canvas></div><div class="legendrow" id="realClasseLeg"></div></div>
-    </div>
-    <div class="sec-title">Ativo mais comprado — por ano</div>
-    <div class="grid three" id="realTop" style="margin-bottom:16px"></div>
-    <div class="card" style="overflow-x:auto;margin-bottom:22px"><div class="panel-h">Movimentação mensal — compras e vendas</div><table id="realTable"></table></div>
-    <p class="note" style="margin-top:0;margin-bottom:22px">Fonte: extrato de movimentação da B3 (jun/2024 – mai/2026). Para atualizar, exporte um novo extrato na Área do Investidor da B3 e me envie.</p>
-    <div style="border-top:1px solid var(--line);margin-bottom:18px"></div>
+    <!-- 1. Plano de Aportes -->
     <div class="sec-title" style="margin-top:4px">Plano de Aportes <span style="font-weight:500;color:var(--muted);font-size:12px" id="aporteHint"></span></div>
     <div class="grid" id="aporteKpis" style="grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px"></div>
+    <!-- 2. Meus Aportes — registro -->
     <div class="sec-title">Meus Aportes — registro <span style="font-weight:500;color:var(--muted);font-size:12px">lance cada aporte; soma e salva automaticamente</span></div>
     <div class="card" style="margin-bottom:16px">
       <div class="aporte-form">
@@ -294,18 +285,29 @@
       <div id="apResumo" style="margin-top:16px"></div>
       <div id="apHist" style="overflow-x:auto"></div>
     </div>
-    <div class="grid three" style="margin-bottom:16px">
-      <div class="card"><div class="panel-h">Aporte mensal planejado <span class="hint">jun–dez</span></div><div class="chart-box sm"><canvas id="aporteMensalChart"></canvas></div></div>
-      <div class="card"><div class="panel-h">Aporte por classe</div><div class="chart-box sm"><canvas id="aporteClasseChart"></canvas></div><div class="legendrow" id="aporteClasseLeg"></div></div>
-      <div class="card"><div class="panel-h">Composição: hoje → alvo</div><div id="aporteAlvo"></div></div>
-    </div>
+    <!-- 3. Aporte mensal planejado -->
+    <div class="card" style="margin-bottom:16px"><div class="panel-h">Aporte mensal planejado <span class="hint">jun–dez</span></div><div class="chart-box sm"><canvas id="aporteMensalChart"></canvas></div></div>
+    <!-- 4. Onde aportar — ranking por ativo -->
     <div class="sec-title">Onde aportar — ranking por ativo <span style="font-weight:500;color:var(--muted);font-size:12px">proporcional à Margem de Segurança</span></div>
     <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
       <div class="card"><div class="panel-h">Ações <span class="hint" id="aporteAcaoTot"></span></div><div id="aporteAcaoRank"></div></div>
       <div class="card"><div class="panel-h">FIIs <span class="hint" id="aporteFiiTot"></span></div><div id="aporteFiiRank"></div></div>
     </div>
-    <div class="card" style="overflow-x:auto"><div class="panel-h">Programação mensal — Jun a Dez</div><table id="aporteTable"></table></div>
-    <p class="note">Plano forward-looking calculado ao vivo da planilha (gap até a meta, regra de Margem de Segurança). Não é histórico de transações nem recomendação de investimento.</p>
+    <!-- 5. Programação mensal -->
+    <div class="card" style="overflow-x:auto;margin-bottom:16px"><div class="panel-h">Programação mensal — Jun a Dez</div><table id="aporteTable"></table></div>
+    <!-- 6. Aporte por classe -->
+    <div class="card" style="margin-bottom:16px"><div class="panel-h">Aporte por classe</div><div class="chart-box sm"><canvas id="aporteClasseChart"></canvas></div><div class="legendrow" id="aporteClasseLeg"></div></div>
+    <p class="note" style="margin-bottom:22px">Plano forward-looking calculado ao vivo da planilha (gap até a meta, regra de Margem de Segurança). Não é histórico de transações nem recomendação de investimento.</p>
+    <div style="border-top:1px solid var(--line);margin-bottom:18px"></div>
+    <!-- 7. Aportes realizados -->
+    <div class="sec-title" style="margin-top:4px">Aportes realizados <span style="font-weight:500;color:var(--muted);font-size:12px" id="realPeriodo"></span></div>
+    <div class="grid" id="realKpis" style="grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px"></div>
+    <!-- 8. Ativo mais comprado — por ano -->
+    <div class="sec-title">Ativo mais comprado — por ano</div>
+    <div class="grid three" id="realTop" style="margin-bottom:16px"></div>
+    <!-- 9. Movimentação mensal -->
+    <div class="card" style="overflow-x:auto;margin-bottom:22px"><div class="panel-h">Movimentação mensal — compras e vendas</div><table id="realTable"></table></div>
+    <p class="note" style="margin-top:0">Fonte: extrato de movimentação da B3 (jun/2024 – mai/2026). Para atualizar, exporte um novo extrato na Área do Investidor da B3 e me envie.</p>
   </section>
 
   <!-- ABA META 2026 -->
@@ -802,9 +804,12 @@ function renderAportes(d){
   rank("aporteFiiRank",d.fiis,P.gFiis,colVar("var(--fiis)"));
   document.getElementById("aporteAcaoTot").textContent="total "+fmt(P.gAcoes);
   document.getElementById("aporteFiiTot").textContent="total "+fmt(P.gFiis);
-  const totH=(P.acoesAtual+P.fiisAtual)||1;
-  const split=(lbl,ap,fp)=>`<div style="margin:12px 0"><div style="font-size:12px;color:var(--muted);margin-bottom:5px">${lbl}</div><div style="display:flex;height:24px;border-radius:6px;overflow:hidden;font-size:11px;font-weight:700;color:#fff"><div style="width:${ap}%;background:${colVar('var(--acoes)')};display:flex;align-items:center;justify-content:center">${pct(ap)}</div><div style="width:${fp}%;background:${colVar('var(--fiis)')};display:flex;align-items:center;justify-content:center">${pct(fp)}</div></div></div>`;
-  document.getElementById("aporteAlvo").innerHTML=split("Hoje",100*P.acoesAtual/totH,100*P.fiisAtual/totH)+split("Alvo (dez/26)",CONFIG.metaAcoesPct,CONFIG.metaFiisPct)+`<div class="legendrow" style="margin-top:4px"><span><i style="background:${colVar('var(--acoes)')}"></i>Ações</span><span><i style="background:${colVar('var(--fiis)')}"></i>FIIs</span></div>`;
+  const aa=document.getElementById("aporteAlvo");
+  if(aa){
+    const totH=(P.acoesAtual+P.fiisAtual)||1;
+    const split=(lbl,ap,fp)=>`<div style="margin:12px 0"><div style="font-size:12px;color:var(--muted);margin-bottom:5px">${lbl}</div><div style="display:flex;height:24px;border-radius:6px;overflow:hidden;font-size:11px;font-weight:700;color:#fff"><div style="width:${ap}%;background:${colVar('var(--acoes)')};display:flex;align-items:center;justify-content:center">${pct(ap)}</div><div style="width:${fp}%;background:${colVar('var(--fiis)')};display:flex;align-items:center;justify-content:center">${pct(fp)}</div></div></div>`;
+    aa.innerHTML=split("Hoje",100*P.acoesAtual/totH,100*P.fiisAtual/totH)+split("Alvo (dez/26)",CONFIG.metaAcoesPct,CONFIG.metaFiisPct)+`<div class="legendrow" style="margin-top:4px"><span><i style="background:${colVar('var(--acoes)')}"></i>Ações</span><span><i style="background:${colVar('var(--fiis)')}"></i>FIIs</span></div>`;
+  }
   const startIdx=new Date().getMonth()+1; let proj=P.pat; const rows=[];
   for(let i=0;i<P.monthsLeft;i++){const mi=startIdx+i; if(mi>11)break; proj+=P.mensal; rows.push({mes:MES12[mi],pat:proj});}
   const head=`<thead><tr><th>Mês</th><th>Aporte Ações</th><th>Aporte FIIs</th><th>Total</th><th>Patrim. projetado</th></tr></thead>`;
