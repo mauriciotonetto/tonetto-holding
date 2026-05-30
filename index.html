@@ -1,5 +1,4 @@
-<!doctype html>
-<script type="application/json" id="cowork-artifact-meta">
+<!doctype html><script type="application/json" id="cowork-artifact-meta">
 {
   "name": "Tonetto Holding",
   "schemaVersion": 1,
@@ -72,9 +71,6 @@
   thead th.sortable:hover{color:var(--ink)}
   thead th.sorted{color:var(--ink)}
   thead th .arr{display:inline-block;width:8px;font-size:9px;margin-left:3px;color:var(--roxo)}
-  tr.prov-year,tr.real-year{cursor:pointer;font-weight:700;background:#F8F9FB;user-select:none;-webkit-user-select:none}
-  tr.prov-year:hover,tr.real-year:hover{background:#EEF1F6}
-  .prov-caret{display:inline-block;width:12px;color:var(--roxo);font-size:10px}
   tbody tr{border-bottom:1px solid #F1F2F5}
   tbody tr:last-child{border-bottom:none}
   .tk{font-weight:700}
@@ -183,13 +179,13 @@
 
   <nav class="tabs" id="tabs">
     <button data-tab="carteira" class="active">Carteira</button>
+    <button data-tab="fatos">Notícias</button>
     <button data-tab="fiis">FIIs</button>
     <button data-tab="acoes">Ações</button>
     <button data-tab="proventos">Proventos</button>
-    <button data-tab="fatos">Notícias</button>
+    <button data-tab="atencao">Pontos de Atenção</button>
     <button data-tab="aportes">Aportes</button>
     <button data-tab="meta2026">Meta 2026</button>
-    <button data-tab="atencao">Pontos de Atenção</button>
   </nav>
 
   <div class="err" id="err"></div>
@@ -250,29 +246,14 @@
   <!-- ABA PROVENTOS -->
   <section data-panel="proventos" class="hide">
     <div class="grid" id="provKpis" style="grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px"></div>
-
-    <div class="sec-title">Projeções Futuras <span style="font-weight:500;color:var(--muted);font-size:12px">~17% a.a.</span></div>
-    <div class="grid" id="projCards" style="grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px"></div>
-
-    <div class="card" style="overflow-x:auto;margin-bottom:16px"><div class="panel-h">Histórico Mensal Completo</div><table id="provTable"></table></div>
-
-    <div class="cards-head" style="margin-top:4px">
-      <div class="panel-h" style="margin:0">Proventos acumulados por ativo <span class="hint" id="provAtivoHint"></span></div>
-      <select id="provAtivoSortSel" class="sortsel">
-        <option value="totalHi">Ordenar: Maior total</option>
-        <option value="totalLo">Menor total</option>
-        <option value="nHi">Mais pagamentos</option>
-        <option value="az">Ticker A–Z</option>
-      </select>
-    </div>
-    <div class="cardgrid" id="provAtivoCards" style="margin-bottom:16px"></div>
-
+    <div class="card" style="margin-bottom:16px"><div class="panel-h">Independência Financeira <span class="hint" id="metaHint"></span></div><div id="indep"></div></div>
     <div class="grid" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
       <div class="card"><div class="panel-h">Evolução Anual de Proventos</div><div class="chart-box sm"><canvas id="provAno"></canvas></div></div>
       <div class="card"><div class="panel-h">Últimos 12 Meses <span class="hint">Total · Ações · FIIs</span></div><div class="chart-box sm"><canvas id="prov12"></canvas></div></div>
     </div>
-
-    <div class="card" style="margin-bottom:16px"><div class="panel-h"><span id="metaTitle">Meta</span></div><div id="indep"></div></div>
+    <div class="sec-title">Projeções Futuras <span style="font-weight:500;color:var(--muted);font-size:12px">~17% a.a.</span></div>
+    <div class="grid" id="projCards" style="grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px"></div>
+    <div class="card" style="overflow-x:auto"><div class="panel-h">Histórico Mensal Completo</div><table id="provTable"></table></div>
   </section>
 
   <!-- ABA ATENÇÃO -->
@@ -283,9 +264,19 @@
 
   <!-- ABA APORTES -->
   <section data-panel="aportes" class="hide">
+    <div class="sec-title" style="margin-top:4px">Aportes realizados <span style="font-weight:500;color:var(--muted);font-size:12px" id="realPeriodo"></span></div>
+    <div class="grid" id="realKpis" style="grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px"></div>
+    <div class="grid" style="grid-template-columns:1.3fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="card"><div class="panel-h">Compras vs Vendas — mensal</div><div class="chart-box"><canvas id="realMensalChart"></canvas></div></div>
+      <div class="card"><div class="panel-h">Compras por classe</div><div class="chart-box"><canvas id="realClasseChart"></canvas></div><div class="legendrow" id="realClasseLeg"></div></div>
+    </div>
+    <div class="sec-title">Ativo mais comprado — por ano</div>
+    <div class="grid three" id="realTop" style="margin-bottom:16px"></div>
+    <div class="card" style="overflow-x:auto;margin-bottom:22px"><div class="panel-h">Movimentação mensal — compras e vendas</div><table id="realTable"></table></div>
+    <p class="note" style="margin-top:0;margin-bottom:22px">Fonte: extrato de movimentação da B3 (jun/2024 – mai/2026). Para atualizar, exporte um novo extrato na Área do Investidor da B3 e me envie.</p>
+    <div style="border-top:1px solid var(--line);margin-bottom:18px"></div>
     <div class="sec-title" style="margin-top:4px">Plano de Aportes <span style="font-weight:500;color:var(--muted);font-size:12px" id="aporteHint"></span></div>
     <div class="grid" id="aporteKpis" style="grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px"></div>
-
     <div class="sec-title">Meus Aportes — registro <span style="font-weight:500;color:var(--muted);font-size:12px">lance cada aporte; soma e salva automaticamente</span></div>
     <div class="card" style="margin-bottom:16px">
       <div class="aporte-form">
@@ -300,32 +291,18 @@
       <div id="apResumo" style="margin-top:16px"></div>
       <div id="apHist" style="overflow-x:auto"></div>
     </div>
-
-    <div class="sec-title">Onde aportar — ranking por ativo <span style="font-weight:500;color:var(--muted);font-size:12px">proporcional à Margem de Segurança</span></div>
-    <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-      <div class="card"><div class="panel-h">Ações <span class="hint" id="aporteAcaoTot"></span></div><div id="aporteAcaoRank"></div></div>
-      <div class="card"><div class="panel-h">FIIs <span class="hint" id="aporteFiiTot"></span></div><div id="aporteFiiRank"></div></div>
-    </div>
-
     <div class="grid three" style="margin-bottom:16px">
       <div class="card"><div class="panel-h">Aporte mensal planejado <span class="hint">jun–dez</span></div><div class="chart-box sm"><canvas id="aporteMensalChart"></canvas></div></div>
       <div class="card"><div class="panel-h">Aporte por classe</div><div class="chart-box sm"><canvas id="aporteClasseChart"></canvas></div><div class="legendrow" id="aporteClasseLeg"></div></div>
       <div class="card"><div class="panel-h">Composição: hoje → alvo</div><div id="aporteAlvo"></div></div>
     </div>
-
-    <div class="card" style="overflow-x:auto;margin-bottom:22px"><div class="panel-h">Programação mensal — Jun a Dez</div><table id="aporteTable"></table></div>
-    <p class="note" style="margin-top:0;margin-bottom:22px">Plano forward-looking calculado ao vivo da planilha (gap até a meta, regra de Margem de Segurança). Não é histórico de transações nem recomendação de investimento.</p>
-
-    <div style="border-top:1px solid var(--line);margin-bottom:18px"></div>
-
-    <div class="sec-title" style="margin-top:4px">Aportes realizados <span style="font-weight:500;color:var(--muted);font-size:12px" id="realPeriodo"></span></div>
-    <div class="grid" id="realKpis" style="grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px"></div>
-
-    <div class="sec-title">Ativo mais comprado — por ano</div>
-    <div class="grid three" id="realTop" style="margin-bottom:16px"></div>
-
-    <div class="card" style="overflow-x:auto"><div class="panel-h">Movimentação mensal — compras e vendas <span class="hint">clique no ano para abrir/fechar</span></div><table id="realTable"></table></div>
-    <p class="note">Fonte: extrato de movimentação da B3 (jun/2024 – mai/2026). Para atualizar, exporte um novo extrato na Área do Investidor da B3 e me envie.</p>
+    <div class="sec-title">Onde aportar — ranking por ativo <span style="font-weight:500;color:var(--muted);font-size:12px">proporcional à Margem de Segurança</span></div>
+    <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="card"><div class="panel-h">Ações <span class="hint" id="aporteAcaoTot"></span></div><div id="aporteAcaoRank"></div></div>
+      <div class="card"><div class="panel-h">FIIs <span class="hint" id="aporteFiiTot"></span></div><div id="aporteFiiRank"></div></div>
+    </div>
+    <div class="card" style="overflow-x:auto"><div class="panel-h">Programação mensal — Jun a Dez</div><table id="aporteTable"></table></div>
+    <p class="note">Plano forward-looking calculado ao vivo da planilha (gap até a meta, regra de Margem de Segurança). Não é histórico de transações nem recomendação de investimento.</p>
   </section>
 
   <!-- ABA META 2026 -->
@@ -356,37 +333,37 @@ const DRIVE_TOOL = "mcp__fcfb38a8-9339-4ca8-b68b-70783af4a15e__read_file_content
 const SHEET_ID = "1ZbX-wGNM-WR0X1v-u61nF_Zx2pqbE5VOgabY3EZJfmM";
 const SHEET_TABS = { FIIS:"FIIS", ACOES:"AÇÕES", PROVENTOS:"PROVENTO$", PATRIMONIO:"PATRIMÔNIO" };
 
-/* ===== retrato de segurança (21/05/2026) ===== */
+/* ===== retrato de segurança (30/05/2026) ===== */
 const SNAPSHOT = {
-  updated:"retrato salvo · 23/05/2026", patrimonio:69629.28, dyHolding:8, proventosTotal:5567.02,
+  updated:"retrato salvo · 30/05/2026", patrimonio:69759.54, dyHolding:7.98, proventosTotal:5567.02,
   alloc:[
-    {nome:"Ações BR", valor:40273.57, atual:58, ideal:55, delta:-1977.47, cor:"var(--acoes)"},
-    {nome:"FIIs", valor:29355.71, atual:42, ideal:25, delta:-11948.39, cor:"var(--fiis)"},
-    {nome:"Renda Fixa", valor:0, atual:0, ideal:15, delta:10444.39, cor:"var(--rf)"},
-    {nome:"Caixa", valor:0, atual:0, ideal:5, delta:3481.46, cor:"var(--caixa)"},
+    {nome:"Ações BR", valor:40263.38, atual:58, ideal:55, delta:-1895.63, cor:"var(--acoes)"},
+    {nome:"FIIs", valor:29496.16, atual:42, ideal:25, delta:-12056.28, cor:"var(--fiis)"},
+    {nome:"Renda Fixa", valor:0, atual:0, ideal:15, delta:10463.93, cor:"var(--rf)"},
+    {nome:"Caixa", valor:0, atual:0, ideal:5, delta:3487.98, cor:"var(--caixa)"},
     {nome:"Ações US$", valor:0, atual:0, ideal:0, delta:0, cor:"var(--us)"},
   ],
   fiis:[
-    {ativo:"XPML11",setor:"Shopping",preco:107.00,pm:109.56,teto:121.00,rent:-2.39,ms:13.08,qtd:55,valor:5885.00,part:20.05,holding:8.45,aporte:0},
-    {ativo:"HGCR11",setor:"Shopping",preco:96.87,pm:93.94,teto:114.00,rent:3.02,ms:17.68,qtd:47,valor:4552.89,part:15.51,holding:6.54,aporte:0},
-    {ativo:"BTLG11",setor:"Logistico",preco:103.50,pm:101.10,teto:102.00,rent:2.32,ms:-1.45,qtd:20,valor:2070.00,part:7.05,holding:2.97,aporte:0},
-    {ativo:"RBRR11",setor:"Logistico",preco:84.00,pm:85.85,teto:118.00,rent:-2.20,ms:40.48,qtd:35,valor:2940.00,part:10.02,holding:4.22,aporte:0},
-    {ativo:"TRXF11",setor:"Hibrido",preco:91.76,pm:102.11,teto:133.00,rent:-11.28,ms:44.94,qtd:91,valor:8350.16,part:28.44,holding:11.99,aporte:11},
-    {ativo:"HGRU11",setor:"Hibrido",preco:131.09,pm:115.96,teto:128.00,rent:11.54,ms:-2.36,qtd:10,valor:1310.90,part:4.47,holding:1.88,aporte:0},
-    {ativo:"VGIR11",setor:"Papel",preco:9.63,pm:9.58,teto:9.90,rent:0.52,ms:2.80,qtd:172,valor:1656.36,part:5.64,holding:2.38,aporte:10},
-    {ativo:"RECR11",setor:"Papel",preco:80.95,pm:77.09,teto:98.00,rent:4.77,ms:21.06,qtd:32,valor:2590.40,part:8.82,holding:3.72,aporte:0},
+    {ativo:"XPML11",setor:"Shopping",preco:107.00,pm:109.56,teto:121.00,rent:-2.39,ms:13.08,qtd:55,valor:5885.00,part:19.95,holding:8.44,aporte:0},
+    {ativo:"HGCR11",setor:"Shopping",preco:97.49,pm:93.94,teto:114.00,rent:3.64,ms:16.94,qtd:47,valor:4582.03,part:15.53,holding:6.57,aporte:0},
+    {ativo:"BTLG11",setor:"Logistico",preco:103.60,pm:101.10,teto:102.00,rent:2.41,ms:-1.54,qtd:20,valor:2072.00,part:7.02,holding:2.97,aporte:0},
+    {ativo:"RBRR11",setor:"Logistico",preco:84.42,pm:85.85,teto:118.00,rent:-1.69,ms:39.78,qtd:35,valor:2954.70,part:10.02,holding:4.24,aporte:0},
+    {ativo:"TRXF11",setor:"Hibrido",preco:91.80,pm:102.11,teto:133.00,rent:-11.23,ms:44.88,qtd:91,valor:8353.80,part:28.32,holding:11.98,aporte:11},
+    {ativo:"HGRU11",setor:"Hibrido",preco:129.93,pm:115.96,teto:128.00,rent:10.75,ms:-1.49,qtd:10,valor:1299.30,part:4.40,holding:1.86,aporte:0},
+    {ativo:"VGIR11",setor:"Papel",preco:9.65,pm:9.58,teto:9.90,rent:0.73,ms:2.59,qtd:177,valor:1708.05,part:5.79,holding:2.45,aporte:5},
+    {ativo:"RECR11",setor:"Papel",preco:82.54,pm:77.09,teto:98.00,rent:6.60,ms:18.73,qtd:32,valor:2641.28,part:8.95,holding:3.79,aporte:0},
   ],
   acoes:[
-    {ativo:"VALE3",setor:"Mineração",preco:83.10,pm:55.32,teto:78.00,rent:33.43,ms:-6.14,qtd:62,valor:5152.20,part:12.79,holding:7.40,aporte:0},
-    {ativo:"BBAS3",setor:"Bancos",preco:20.94,pm:25.18,teto:25.00,rent:-20.25,ms:19.39,qtd:345,valor:7224.30,part:17.94,holding:10.38,aporte:8},
-    {ativo:"TAEE11",setor:"Elétrico",preco:38.73,pm:39.30,teto:47.58,rent:-1.47,ms:22.85,qtd:134,valor:5189.82,part:12.89,holding:7.45,aporte:23},
-    {ativo:"ISAE4",setor:"Elétrico",preco:28.20,pm:26.13,teto:31.27,rent:7.34,ms:10.89,qtd:251,valor:7078.20,part:17.58,holding:10.17,aporte:33},
-    {ativo:"AURE3",setor:"Elétrico",preco:12.45,pm:11.44,teto:11.66,rent:8.11,ms:-6.35,qtd:195,valor:2427.75,part:6.03,holding:3.49,aporte:0},
-    {ativo:"BBSE3",setor:"Seguridade",preco:34.47,pm:34.62,teto:35.50,rent:-0.44,ms:2.99,qtd:248,valor:8548.56,part:21.23,holding:12.28,aporte:59},
-    {ativo:"ITUB4",setor:"Bancos",preco:39.43,pm:40.18,teto:47.92,rent:-1.90,ms:21.53,qtd:118,valor:4652.74,part:11.55,holding:6.68,aporte:14},
+    {ativo:"VALE3",setor:"Mineração",preco:82.82,pm:55.32,teto:78.00,rent:33.20,ms:-5.82,qtd:62,valor:5134.84,part:12.75,holding:7.36,aporte:0},
+    {ativo:"BBAS3",setor:"Bancos",preco:20.30,pm:25.18,teto:25.00,rent:-24.04,ms:23.15,qtd:345,valor:7003.50,part:17.39,holding:10.04,aporte:8},
+    {ativo:"TAEE11",setor:"Elétrico",preco:39.16,pm:39.30,teto:47.58,rent:-0.36,ms:21.50,qtd:134,valor:5247.44,part:13.03,holding:7.52,aporte:23},
+    {ativo:"ISAE4",setor:"Elétrico",preco:27.03,pm:26.13,teto:31.27,rent:3.33,ms:15.69,qtd:251,valor:6784.53,part:16.85,holding:9.73,aporte:33},
+    {ativo:"AURE3",setor:"Elétrico",preco:12.37,pm:11.44,teto:11.66,rent:7.52,ms:-5.74,qtd:195,valor:2412.15,part:5.99,holding:3.46,aporte:0},
+    {ativo:"BBSE3",setor:"Seguridade",preco:35.40,pm:34.62,teto:35.50,rent:2.20,ms:0.28,qtd:253,valor:8956.20,part:22.24,holding:12.84,aporte:5},
+    {ativo:"ITUB4",setor:"Bancos",preco:40.04,pm:40.18,teto:47.92,rent:-0.35,ms:19.68,qtd:118,valor:4724.72,part:11.73,holding:6.77,aporte:14},
   ],
   acaoSetorIdeal:{ "Elétrico":25, "Bancos":25, "Mineração":10, "Seguridade":15 },
-  equity:[{mes:"Jan",valor:62300.10},{mes:"Fev",valor:62960.70},{mes:"Mar",valor:65353.29},{mes:"Abr",valor:78593.53},{mes:"Mai",valor:69629.28}],
+  equity:[{mes:"Jan",valor:62300.10},{mes:"Fev",valor:62960.70},{mes:"Mar",valor:65353.29},{mes:"Abr",valor:78593.53},{mes:"Mai",valor:69759.54}],
   prov:[
     {mes:"Abr/25",fii:190.91,acao:0},{mes:"Mai/25",fii:203.26,acao:124.16},{mes:"Jun/25",fii:203.32,acao:73.90},
     {mes:"Jul/25",fii:249.20,acao:0.44},{mes:"Ago/25",fii:220.18,acao:299.12},{mes:"Set/25",fii:213.49,acao:117.95},
@@ -396,7 +373,7 @@ const SNAPSHOT = {
   provAnos:[
     {ano:"2024",fii:0,acao:0,total:0,media:0,dia:0,varAA:null},
     {ano:"2025",fii:1998.54,acao:972.01,total:2970.55,media:247.55,dia:8.13,varAA:null},
-    {ano:"2026",fii:1453.70,acao:1142.77,total:2596.47,media:216.37,dia:18.16,varAA:-12.59},
+    {ano:"2026",fii:1453.70,acao:1142.77,total:2596.47,media:216.37,dia:17.31,varAA:-12.59},
   ],
 };
 
@@ -517,10 +494,6 @@ let cartAcaoSort={key:"valor",dir:"desc"};
 const TEXT_KEYS={ativo:1,setor:1};
 /* aba Proventos: anos expandidos (yy -> bool), preservado entre re-renders */
 let provOpenYears={};
-/* aba Proventos: ordenação da seção "por ativo" */
-let provAtivoSort="totalHi";
-/* aba Aportes: anos expandidos na Movimentação mensal (ano -> bool) */
-let realOpenYears={};
 function sortRows(list,key,dir){
   const a=list.slice();
   a.sort((x,y)=>{
@@ -580,7 +553,7 @@ function render(d){
   renderFiiTable(); renderAcaoTable(); renderFiiCards(); renderAcaoCards();
 
   /* proventos */
-  renderProvKpis(d); renderIndep(d,totFii,totAcao); renderProvTable(d); renderProj(d); renderProvAtivo();
+  renderProvKpis(d); renderIndep(d,totFii,totAcao); renderProvTable(d); renderProj(d);
 
   /* atenção + aportes + meta */
   renderAlerts(d,acaoSet); renderRealizados(); renderAportes(d); renderMeta2026(d); renderRegistro(); renderFatos();
@@ -709,7 +682,7 @@ function renderIndep(d){
   const fiiMes=avg6(d.prov,"fii"), acaoMes=avg6(d.prov,"acao"), totMes=fiiMes+acaoMes;
   const bar=(lbl,val,meta,cor)=>{const p=Math.min(100,meta?100*val/meta:0);
     return `<div class="prog"><div class="top"><span><b>${lbl}</b> <span style="color:var(--muted)">méd. 6m</span></span><span style="color:var(--muted)">${fmt(val)} / ${fmt0(meta)} · ${pct(p)}</span></div><div class="bar"><i style="width:${p}%;background:${cor}"></i></div></div>`;}
-  {const mt=document.getElementById("metaTitle"); if(mt) mt.textContent="Meta "+fmt0(CONFIG.metaIndepTotal)+"/mês";}
+  document.getElementById("metaHint").textContent="média 6m · meta "+fmt0(CONFIG.metaIndepTotal)+"/mês";
   document.getElementById("indep").innerHTML=
     bar("Meta Total",totMes,CONFIG.metaIndepTotal,colVar("var(--roxo)"))+
     bar("Meta FIIs",fiiMes,CONFIG.metaIndepFiis,colVar("var(--fiis)"))+
@@ -754,74 +727,6 @@ function toggleProvYear(yy){
   document.querySelectorAll("#provTable tr.yr-"+yy).forEach(tr=>{tr.style.display=open?"":"none";});
   const cr=document.querySelector('#provTable tr.prov-year[data-yy="'+yy+'"] .prov-caret');
   if(cr) cr.textContent=open?"▾":"▸";
-}
-
-/* ===== Proventos acumulados por ativo (extrato B3 — atualizar só este bloco a cada novo extrato) ===== */
-/* PROVENTOS_ATIVO_START */
-const PROV_ATIVO = {
-  updated: "23/05/2026",
-  periodo: "jul/2024 – mai/2026",
-  itens: [
-    {ticker:"TRXF11", total:1215.82, n:22, primeiro:"14/08/2024", ultimo:"15/05/2026"},
-    {ticker:"XPML11", total:858.36, n:21, primeiro:"23/08/2024", ultimo:"24/04/2026"},
-    {ticker:"CXSE3", total:602.86, n:10, primeiro:"15/08/2024", ultimo:"16/01/2026"},
-    {ticker:"BTLG11", total:560.33, n:22, primeiro:"25/07/2024", ultimo:"24/04/2026"},
-    {ticker:"RECR11", total:510.29, n:20, primeiro:"14/10/2024", ultimo:"15/05/2026"},
-    {ticker:"BBSE3", total:468.38, n:6, primeiro:"30/08/2024", ultimo:"02/03/2026"},
-    {ticker:"HGCR11", total:455.15, n:16, primeiro:"14/02/2025", ultimo:"15/05/2026"},
-    {ticker:"VALE3", total:428.36, n:7, primeiro:"04/09/2024", ultimo:"04/03/2026"},
-    {ticker:"BBAS3", total:391.57, n:19, primeiro:"30/08/2024", ultimo:"11/03/2026"},
-    {ticker:"ISAE4", total:331.37, n:12, primeiro:"21/01/2025", ultimo:"29/04/2026"},
-    {ticker:"RBRR11", total:279.45, n:14, primeiro:"16/04/2025", ultimo:"19/05/2026"},
-    {ticker:"HGRU11", total:184.05, n:15, primeiro:"18/03/2025", ultimo:"15/05/2026"},
-    {ticker:"TAEE11", total:173.02, n:9, primeiro:"29/01/2025", ultimo:"28/01/2026"},
-    {ticker:"RBRP11", total:147.20, n:12, primeiro:"14/04/2025", ultimo:"13/03/2026"},
-    {ticker:"ITUB4", total:119.02, n:29, primeiro:"02/09/2024", ultimo:"04/05/2026"},
-    {ticker:"VGIR11", total:107.71, n:6, primeiro:"17/12/2025", ultimo:"20/05/2026"},
-    {ticker:"VILG11", total:70.07, n:14, primeiro:"14/02/2025", ultimo:"13/03/2026"},
-    {ticker:"CPLE3", total:32.42, n:1, primeiro:"19/01/2026", ultimo:"19/01/2026"},
-    {ticker:"BBDC4", total:29.78, n:7, primeiro:"03/11/2025", ultimo:"30/04/2026"},
-    {ticker:"KLBN11", total:24.06, n:6, primeiro:"15/08/2024", ultimo:"19/08/2025"},
-    {ticker:"AURE3", total:11.12, n:1, primeiro:"05/05/2025", ultimo:"05/05/2025"},
-    {ticker:"CSMG3", total:2.51, n:2, primeiro:"26/12/2025", ultimo:"26/12/2025"},
-  ],
-};
-/* PROVENTOS_ATIVO_END */
-function renderProvAtivo(){
-  const grid=document.getElementById("provAtivoCards"); if(!grid||!DATA) return;
-  /* só ativos que ainda estão na carteira (ignora o que foi vendido) */
-  const hold={};
-  (DATA.fiis||[]).forEach(x=>hold[x.ativo]={setor:x.setor,classe:"FII"});
-  (DATA.acoes||[]).forEach(x=>hold[x.ativo]={setor:x.setor,classe:"Ação"});
-  let list=(PROV_ATIVO.itens||[]).filter(x=>hold[x.ticker]);
-  const s=provAtivoSort;
-  if(s==="totalLo") list.sort((a,b)=>a.total-b.total);
-  else if(s==="nHi") list.sort((a,b)=>(b.n-a.n)||(b.total-a.total));
-  else if(s==="az") list.sort((a,b)=>a.ticker.localeCompare(b.ticker,"pt-BR"));
-  else list.sort((a,b)=>b.total-a.total);
-  const soma=list.reduce((t,x)=>t+x.total,0)||1;
-  const max=list.reduce((m,x)=>Math.max(m,x.total),0)||1;
-  const h=document.getElementById("provAtivoHint");
-  if(h) h.textContent=fmt(soma)+" acumulados · "+PROV_ATIVO.periodo+" · "+list.length+" ativos · extrato "+PROV_ATIVO.updated;
-  const money=v=>(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
-  const colorOf=t=>ACAO_COLORS[t]||FII_COLORS[t]||tkColor(t);
-  const shortDt=d=>{const p=(d||"").split("/");return p.length===3?p[0]+"/"+p[1]+"/"+p[2].slice(2):d;};
-  grid.innerHTML=list.map(x=>{
-    const code=x.ticker.replace(/\d+$/,""); const hd=hold[x.ticker];
-    const medio=x.n?x.total/x.n:0; const share=100*x.total/soma; const w=Math.max(4,Math.round(100*x.total/max)); const col=colorOf(x.ticker);
-    return `<div class="fcard">
-      <div class="tk2">${x.ticker}</div><div class="seg">${hd.setor} · ${hd.classe}</div>
-      <div class="prow"><div class="badge" style="background:${col}">${code}</div>
-        <div><div class="price"><small>R$</small>${money(x.total)}</div>
-        <div class="chg" style="color:var(--muted)">${x.n} ${x.n===1?'pagamento':'pagamentos'}</div></div></div>
-      <div class="stats">
-        <div class="stat"><div class="l">Médio</div><div class="v">R$ ${money(medio)}</div></div>
-        <div class="stat"><div class="l">% recebido</div><div class="v">${pct(share)}</div></div>
-        <div class="stat"><div class="l">Último</div><div class="v">${shortDt(x.ultimo)}</div></div>
-      </div>
-      <div class="tetobar"><i style="width:${w}%;background:${col}"></i></div>
-    </div>`;
-  }).join("")||`<div class="sub" style="color:var(--muted)">Sem proventos para os ativos da carteira atual.</div>`;
 }
 function renderAlerts(d,acaoSet){
   const all=d.fiis.map(x=>({...x,cls:"FII"})).concat(d.acoes.map(x=>({...x,cls:"Ação"})));
@@ -1014,20 +919,22 @@ function drawMetaProj(d){
 /* ===== Fatos Relevantes (atualizado pela tarefa das 11h; editar só o bloco entre os marcadores) ===== */
 /* FATOS_START */
 const FATOS = {
-  updated: "23/05/2026 · 11:00",
+  updated: "29/05/2026 · 11:00",
   itens: [
-    {cat:"dividendo", ticker:"TAEE11", titulo:"Dividendo de ~R$ 0,90/unit — pagamento em 26/05", corpo:"Total de <b>R$ 313,1 mi</b>. Data com <b>29/04</b>; recebe quem tinha a ação até essa data. 1T26 com receita regulatória <b>+10%</b> a/a.", data:"27/05/2026", fonte:"https://investidor10.com.br/noticias/taesa-taee11-prepara-dividendos-de-quase-r-1-por-acao-em-maio-de-2026-120104/"},
-    {cat:"provento", ticker:"VGIR11", titulo:"Rendimento de R$ 0,12/cota", corpo:"Crédito em <b>20/05</b>; FII de papel atrelado ao CDI. Distribuição mensal mantida.", data:"20/05/2026", fonte:"https://investidor10.com.br/fiis/vgir11/"},
-    {cat:"provento", ticker:"RBRR11", titulo:"Rendimento de R$ 0,90/cota", corpo:"Pago em <b>19/05</b>; entre os maiores DYs dos seus FIIs (papel/high grade).", data:"19/05/2026", fonte:"https://conteudos.xpi.com.br/fundos-imobiliarios/relatorios/fiis-confira-o-calendario-de-dividendos-de-maio-de-2026/"},
-    {cat:"provento", ticker:"TRXF11", titulo:"Dividendo de R$ 0,93/cota — yield acima de 1%", corpo:"Data-base <b>30/04</b>, pago em <b>15/05</b>; yield mensal de <b>~1,01%</b>. FII híbrido com contratos longos.", data:"15/05/2026", fonte:"https://www.infomoney.com.br/onde-investir/fii-trxf11-divulga-novos-dividendos-para-maio-veja-valor-e-quem-recebe/"},
-    {cat:"provento", ticker:"HGCR11", titulo:"Rendimento mensal pago em maio", corpo:"Crédito em <b>15/05</b>; FII de papel (CRIs), DY mensal próximo de <b>1%</b>.", data:"15/05/2026", fonte:"https://investidor10.com.br/fiis/hgcr11/"},
-    {cat:"provento", ticker:"RECR11", titulo:"Rendimento mensal pago em maio", corpo:"Crédito em <b>15/05</b>; segue entre os maiores DYs da carteira (CRIs indexados a IPCA+).", data:"15/05/2026", fonte:"https://investidor10.com.br/fiis/recr11/"},
-    {cat:"resultado", ticker:"VALE3", titulo:"Lucro de US$ 1,89 bi no 1T26; tese de dividendo segue forte", corpo:"Minério recuou para <b>~US$ 108</b>/t com China mais fraca, mas BTG e BofA veem <b>dividendos extraordinários</b> prováveis no 2S26; provento projetado de <b>~R$ 5,85</b>/ação em 2026.", data:"22/05/2026", fonte:"https://arevista.com.br/investimentos/vale-vale3-lucra-us-189-bilhao-no-1t26-mas-acoes-sentem-pressao-dividendos-ainda-sustentam-tese/"},
-    {cat:"alerta", ticker:"BBAS3", titulo:"JCP do 1T26, mas sem extraordinários e guidance cortado", corpo:"Aprovou <b>R$ 465,7 mi</b> em JCP e revisou o lucro de 2026 para <b>R$ 18–22 bi</b>. Diretoria descartou <b>dividendos extraordinários</b> no ano — atenção à renda do papel.", data:"14/05/2026", fonte:"https://www.seudinheiro.com/2026/empresas/banco-do-brasil-bbas3-fecha-a-torneira-dividendos-extras-estao-totalmente-descartados-em-2026-diz-diretor-miql/"},
-    {cat:"dividendo", ticker:"ISAE4", titulo:"JCP de R$ 444,7 mi aprovado", corpo:"Política de distribuir <b>75%</b> do lucro regulatório sustenta a previsibilidade dos proventos da transmissora.", data:"14/05/2026", fonte:"https://arevista.com.br/dividendos/isae4-ou-taee11-trocar-agora-e-cilada-ou-chance-de-mais-dividendos/"},
-    {cat:"resultado", ticker:"BBSE3", titulo:"1T26 com lucro de R$ 2,2 bi; dividendos no 2º semestre", corpo:"Distribuição é semestral (<b>fev e ago</b>) — maio não tem provento. DY projetado de <b>~11%</b> em 2026 mantém a tese de renda.", data:"21/05/2026", fonte:"https://www.nordinvestimentos.com.br/blog/bb-seguridade-dividendos-2026/"},
-    {cat:"noticia", ticker:"XPML11", titulo:"Entre os FIIs mais recomendados para maio", corpo:"Apareceu com <b>7 recomendações</b> de analistas no mês, puxado pela retomada de shoppings.", data:"21/05/2026", fonte:"https://gazetamercantil.com/fundos-imobiliarios-fiis-mais-recomendados-maio"},
-    {cat:"macro", ticker:"SELIC", titulo:"Copom corta a Selic para 14,5%", corpo:"Segundo corte seguido (<b>-0,25 p.p.</b>). Juros em queda tendem a <b>favorecer FIIs de tijolo</b> (XPML, BTLG, HGRU) e elétricas (TAEE, ISAE); FIIs de papel atrelados ao CDI (VGIR, RECR) podem ver o rendimento ceder aos poucos.", data:"abr/2026", fonte:"https://agenciabrasil.ebc.com.br/economia/noticia/2026-04/banco-central-reduz-juros-basicos-para-145-ao-ano"},
+    {cat:"macro", ticker:"SELIC", titulo:"Copom corta Selic para 14,5% — 2ª queda seguida", corpo:"Decisão por <b>6 votos a 0</b> em <b>29/05</b>: redução de <b>0,25 p.p.</b>, de <b>14,75%</b> para <b>14,50%</b>. Movimento já esperado e amplia ciclo de afrouxamento, ainda com guerra no Oriente Médio no radar.", data:"29/05/2026", fonte:"https://agenciabrasil.ebc.com.br/economia/noticia/2026-04/banco-central-reduz-juros-basicos-para-145-ao-ano"},
+    {cat:"alerta", ticker:"AURE3", titulo:"Auren reverte lucro e tem prejuízo de R$ 602 mi no 1T26", corpo:"Receita líquida de <b>R$ 3,1 bi</b> (+4%), mas custo de compra de energia subiu <b>33%</b> e Ebitda ajustado caiu <b>23%</b>. Mercado segue sem projetar DY relevante para 2026.", data:"1T26", fonte:"https://www.nordinvestimentos.com.br/blog/auren-aure3-resultados-1t26/"},
+    {cat:"resultado", ticker:"VALE3", titulo:"Vale lucra US$ 1,89 bi no 1T26 (+36%)", corpo:"Em reais, lucro de ~<b>R$ 9,4 bi</b>, com avanço em volumes e preços de minério, cobre e níquel. Safra vê <b>sem dividendo extraordinário em 2026</b>; DY projetado de <b>6%–6,75%</b>.", data:"1T26", fonte:"https://arevista.com.br/investimentos/vale-vale3-lucra-us-189-bilhao-no-1t26-mas-acoes-sentem-pressao-dividendos-ainda-sustentam-tese/"},
+    {cat:"resultado", ticker:"ISAE4", titulo:"ISA Energia tem lucro de R$ 358 mi no 1T26 (+6%)", corpo:"Ebitda consolidado de <b>R$ 1,02 bi</b> (<b>+10,6%</b> a/a). Segue entre as elétricas com melhor combinação de geração de caixa e dividendos.", data:"1T26", fonte:"https://arevista.com.br/dividendos/axia3-isae4-ou-taee11-qual-acao-eletrica-esta-mais-atrativa-para-dividendos/"},
+    {cat:"provento", ticker:"XPML11", titulo:"R$ 0,92/cota pago em 25/05", corpo:"Data com <b>18/05</b>, pagamento em <b>25/05</b>; DY mensal de ~<b>0,83%</b>. Mês também marcou venda de 30% do Shops Jardins por <b>R$ 20 mi</b>.", data:"25/05/2026", fonte:"https://statusinvest.com.br/fundos-imobiliarios/xpml11"},
+    {cat:"provento", ticker:"BTLG11", titulo:"R$ 0,81/cota pago em 25/05", corpo:"Data com em <b>15/05</b>, pagamento em <b>25/05</b>; DY mensal de ~<b>0,78%</b>. Distribuição mantida estável vs. abril.", data:"25/05/2026", fonte:"https://statusinvest.com.br/noticias/btlg11-pagamento-081-dividendos-maio-2026/"},
+    {cat:"provento", ticker:"VGIR11", titulo:"R$ 0,12/cota (yield mensal de 1,23%)", corpo:"Ex em <b>13/05</b>, pago em <b>20/05</b>. FII de papel atrelado ao CDI, segue beneficiado por Selic alta.", data:"20/05/2026", fonte:"https://www.suno.com.br/noticias/vgir11-dividendos-maio-2026/"},
+    {cat:"provento", ticker:"RBRR11", titulo:"Maior dividendo dos últimos 9 meses", corpo:"Distribuição de <b>R$ 0,90/cota</b> (referente a abril), ex em <b>12/05</b> e pagamento em <b>19/05</b> — maior valor desde set/25.", data:"19/05/2026", fonte:"https://fiis.com.br/noticias/fundo-imobiliario-rbrr11-vai-pagar-maior-dividendo-dos-ultimos-9-meses-maio-2026-jj/"},
+    {cat:"provento", ticker:"RECR11", titulo:"R$ 1,05/cota pago em 15/05", corpo:"Segue entre os maiores DYs dos seus FIIs de papel (CRIs indexados a <b>IPCA+</b>).", data:"15/05/2026", fonte:"https://investidor10.com.br/fiis/recr11/"},
+    {cat:"provento", ticker:"HGRU11", titulo:"R$ 0,95/cota pago em 15/05", corpo:"FII híbrido de renda urbana, distribuição mensal estável.", data:"15/05/2026", fonte:"https://statusinvest.com.br/fundos-imobiliarios/hgru11"},
+    {cat:"provento", ticker:"HGCR11", titulo:"R$ 0,95/cota pago em 15/05", corpo:"FII de papel (CRIs); DY de <b>~0,95%</b> sobre a cotação de fechamento de abril.", data:"15/05/2026", fonte:"https://statusinvest.com.br/fundos-imobiliarios/hgcr11"},
+    {cat:"dividendo", ticker:"BBAS3", titulo:"R$ 465,7 mi em JCP — data com em 01/06", corpo:"JCP do <b>1T26</b> aprovado em <b>13/05</b>; <b>data com 01/06</b>, ex em <b>02/06</b> e pagamento em <b>11/06</b>. Payout do ano calibrado em <b>30%</b>.", data:"13/05/2026", fonte:"https://investidor10.com.br/noticias/dividendos-do-banco-do-brasil-bbas3-saiba-quanto-e-quando-virao-em-2026-118072/"},
+    {cat:"resultado", ticker:"BBSE3", titulo:"Lucro de R$ 2,2 bi no 1T26 (+11%)", corpo:"Resultado financeiro <b>+59%</b> compensou prêmios mais fracos. DY projetado de <b>~12%</b> para 2026; distribuição prevista de <b>R$ 4,95 bi</b>.", data:"1T26", fonte:"https://www.nordinvestimentos.com.br/blog/bb-seguridade-bbse3-1t26/"},
+    {cat:"dividendo", ticker:"ITUB4", titulo:"JCP mensal de R$ 0,01765/ação pago em 04/05", corpo:"Calendário 2026 do <b>JCP mensal</b> mantido em <b>R$ 0,01765 bruto</b> (R$ 0,0150 líquido). Direito aos posicionados entre <b>31/03 e 01/04</b>.", data:"04/05/2026", fonte:"https://www.moneytimes.com.br/itau-itub4-divulga-cronograma-de-jcp-para-2026-veja-valores-por-acao-lmrs/"},
   ],
 };
 /* FATOS_END */
@@ -1081,7 +988,7 @@ function setupRegistro(){
 
 /* ===== Aportes realizados (extrato B3; atualizar este bloco ao reprocessar) ===== */
 /* REAL_START */
-const REALIZADOS_BASE = {"mensalBase":[{"sk":"2024-06","mes":"Jun/24","ano":"2024","ca":0.0,"cf":0.0,"cr":447.6,"tv":1000.0},{"sk":"2024-07","mes":"Jul/24","ano":"2024","ca":4512.83,"cf":5501.43,"cr":0.0,"tv":449.73},{"sk":"2024-08","mes":"Ago/24","ano":"2024","ca":4832.37,"cf":2273.03,"cr":0.0,"tv":0.0},{"sk":"2024-09","mes":"Set/24","ano":"2024","ca":4469.49,"cf":3549.39,"cr":0.0,"tv":0.0},{"sk":"2024-10","mes":"Out/24","ano":"2024","ca":2041.36,"cf":2388.32,"cr":0.0,"tv":0.0},{"sk":"2024-12","mes":"Dez/24","ano":"2024","ca":247.55,"cf":97.94,"cr":0.0,"tv":0.0},{"sk":"2025-01","mes":"Jan/25","ano":"2025","ca":1673.13,"cf":1974.4,"cr":0.0,"tv":0.0},{"sk":"2025-02","mes":"Fev/25","ano":"2025","ca":0.0,"cf":2622.85,"cr":0.0,"tv":0.0},{"sk":"2025-03","mes":"Mar/25","ano":"2025","ca":1696.78,"cf":0.0,"cr":0.0,"tv":0.0},{"sk":"2025-04","mes":"Abr/25","ano":"2025","ca":1001.2,"cf":2239.23,"cr":0.0,"tv":0.0},{"sk":"2025-05","mes":"Mai/25","ano":"2025","ca":0.0,"cf":1079.28,"cr":0.0,"tv":0.0},{"sk":"2025-06","mes":"Jun/25","ano":"2025","ca":1230.9,"cf":0.0,"cr":0.0,"tv":0.0},{"sk":"2025-07","mes":"Jul/25","ano":"2025","ca":1823.99,"cf":2065.4,"cr":1081.88,"tv":0.0},{"sk":"2025-08","mes":"Ago/25","ano":"2025","ca":729.2,"cf":0.0,"cr":0.0,"tv":0.0},{"sk":"2025-09","mes":"Set/25","ano":"2025","ca":2890.9,"cf":1037.22,"cr":0.0,"tv":328.14},{"sk":"2025-10","mes":"Out/25","ano":"2025","ca":120.61,"cf":336.96,"cr":0.0,"tv":0.0},{"sk":"2025-11","mes":"Nov/25","ano":"2025","ca":1656.65,"cf":4067.05,"cr":0.0,"tv":0.0},{"sk":"2025-12","mes":"Dez/25","ano":"2025","ca":168.64,"cf":364.16,"cr":0.0,"tv":0.0},{"sk":"2026-01","mes":"Jan/26","ano":"2026","ca":161.97,"cf":1627.21,"cr":0.0,"tv":0.0},{"sk":"2026-02","mes":"Fev/26","ano":"2026","ca":908.21,"cf":3012.0,"cr":0.0,"tv":8118.5},{"sk":"2026-03","mes":"Mar/26","ano":"2026","ca":11996.6,"cf":98.0,"cr":0.0,"tv":12498.94},{"sk":"2026-04","mes":"Abr/26","ano":"2026","ca":10024.26,"cf":1009.69,"cr":0.0,"tv":3045.76},{"sk":"2026-05","mes":"Mai/26","ano":"2026","ca":164.48,"cf":0.0,"cr":3044.91,"tv":0.0}],"tickerAno":{"2024":{"AURE3":2231.14,"BBAS3":4409.89,"BBSE3":824.38,"BTLG11":3437.23,"CXSE3":3486.47,"ITUB4":356.73,"KLBN11":375.84,"RECR11":877.58,"TAEE11":995.28,"TRPL4":995.48,"TRXF11":5060.57,"VALE3":2428.39,"XPML11":4434.73},"2025":{"BBAS3":476.97,"BBDC4":1617.49,"BBSE3":1581.55,"CPLE6":1280.29,"CSMG3":191.3,"CXSE3":2799.7,"HGCR11":3443.85,"HGRU11":1507.5,"ISAE4":2089.62,"ITUB4":562.31,"LCA":1081.88,"RBRP11":2174.69,"RBRR11":3004.92,"RECR11":1589.42,"SAPR11":639.52,"TAEE11":752.05,"TRXF11":1010.7,"VALE3":1001.2,"VGIR11":961.92,"VILG11":502.6,"XPML11":1590.95},"2026":{"BBAS3":3799.15,"BBSE3":6180.45,"CDB":3044.91,"CPLE3":92.96,"CXSE3":1321.6,"HGCR11":971.1,"ISAE4":3472.41,"ITUB4":3857.75,"RBRP11":982.96,"SAPR11":1011.75,"TAEE11":3519.45,"TRXF11":3107.43,"VGIR11":685.41}}};
+const REALIZADOS_BASE = {"mensalBase":[{"sk":"2024-06","mes":"Jun/24","ano":"2024","ca":0.0,"cf":0.0,"cr":447.6,"tv":1000.0},{"sk":"2024-07","mes":"Jul/24","ano":"2024","ca":4512.83,"cf":5501.43,"cr":0.0,"tv":449.73},{"sk":"2024-08","mes":"Ago/24","ano":"2024","ca":4832.37,"cf":2273.03,"cr":0.0,"tv":0.0},{"sk":"2024-09","mes":"Set/24","ano":"2024","ca":4469.49,"cf":3549.39,"cr":0.0,"tv":0.0},{"sk":"2024-10","mes":"Out/24","ano":"2024","ca":2041.36,"cf":2388.32,"cr":0.0,"tv":0.0},{"sk":"2024-12","mes":"Dez/24","ano":"2024","ca":247.55,"cf":97.94,"cr":0.0,"tv":0.0},{"sk":"2025-01","mes":"Jan/25","ano":"2025","ca":1673.13,"cf":1974.4,"cr":0.0,"tv":0.0},{"sk":"2025-02","mes":"Fev/25","ano":"2025","ca":0.0,"cf":2622.85,"cr":0.0,"tv":0.0},{"sk":"2025-03","mes":"Mar/25","ano":"2025","ca":1696.78,"cf":0.0,"cr":0.0,"tv":0.0},{"sk":"2025-04","mes":"Abr/25","ano":"2025","ca":1001.2,"cf":2239.23,"cr":0.0,"tv":0.0},{"sk":"2025-05","mes":"Mai/25","ano":"2025","ca":0.0,"cf":1079.28,"cr":0.0,"tv":0.0},{"sk":"2025-06","mes":"Jun/25","ano":"2025","ca":1230.9,"cf":0.0,"cr":0.0,"tv":0.0},{"sk":"2025-07","mes":"Jul/25","ano":"2025","ca":1823.99,"cf":2065.4,"cr":1081.88,"tv":0.0},{"sk":"2025-08","mes":"Ago/25","ano":"2025","ca":729.2,"cf":0.0,"cr":0.0,"tv":0.0},{"sk":"2025-09","mes":"Set/25","ano":"2025","ca":2890.9,"cf":1037.22,"cr":0.0,"tv":328.14},{"sk":"2025-10","mes":"Out/25","ano":"2025","ca":120.61,"cf":336.96,"cr":0.0,"tv":0.0},{"sk":"2025-11","mes":"Nov/25","ano":"2025","ca":1656.65,"cf":4067.05,"cr":0.0,"tv":0.0},{"sk":"2025-12","mes":"Dez/25","ano":"2025","ca":168.64,"cf":364.16,"cr":0.0,"tv":0.0},{"sk":"2026-01","mes":"Jan/26","ano":"2026","ca":161.97,"cf":1627.21,"cr":0.0,"tv":0.0},{"sk":"2026-02","mes":"Fev/26","ano":"2026","ca":908.21,"cf":3012.0,"cr":0.0,"tv":8118.5},{"sk":"2026-03","mes":"Mar/26","ano":"2026","ca":11996.6,"cf":98.0,"cr":0.0,"tv":12498.94},{"sk":"2026-04","mes":"Abr/26","ano":"2026","ca":10024.26,"cf":1009.69,"cr":0.0,"tv":3045.76},{"sk":"2026-05","mes":"Mai/26","ano":"2026","ca":164.48,"cf":0.0,"cr":3044.91,"tv":0.0},{"sk":"2026-06","mes":"Jun/26","ano":"2026","ca":174.80,"cf":48.35,"cr":0.0,"tv":0.0}],"tickerAno":{"2024":{"AURE3":2231.14,"BBAS3":4409.89,"BBSE3":824.38,"BTLG11":3437.23,"CXSE3":3486.47,"ITUB4":356.73,"KLBN11":375.84,"RECR11":877.58,"TAEE11":995.28,"TRPL4":995.48,"TRXF11":5060.57,"VALE3":2428.39,"XPML11":4434.73},"2025":{"BBAS3":476.97,"BBDC4":1617.49,"BBSE3":1581.55,"CPLE6":1280.29,"CSMG3":191.3,"CXSE3":2799.7,"HGCR11":3443.85,"HGRU11":1507.5,"ISAE4":2089.62,"ITUB4":562.31,"LCA":1081.88,"RBRP11":2174.69,"RBRR11":3004.92,"RECR11":1589.42,"SAPR11":639.52,"TAEE11":752.05,"TRXF11":1010.7,"VALE3":1001.2,"VGIR11":961.92,"VILG11":502.6,"XPML11":1590.95},"2026":{"BBAS3":3799.15,"BBSE3":6355.25,"CDB":3044.91,"CPLE3":92.96,"CXSE3":1321.6,"HGCR11":971.1,"ISAE4":3472.41,"ITUB4":3857.75,"RBRP11":982.96,"SAPR11":1011.75,"TAEE11":3519.45,"TRXF11":3107.43,"VGIR11":733.76}}};
 let MOVS=[];
 /* REAL_END */
 function parseMovs(rowsArr){
@@ -1129,22 +1036,13 @@ function renderRealizados(){
   const tb=document.getElementById("realTable");
   if(tb){ const head=`<thead><tr><th>Mês</th><th>Ações</th><th>%</th><th>FIIs</th><th>%</th><th>RF</th><th>%</th><th>Compras</th><th>Vendas</th><th>Líquido</th></tr></thead>`;
     const anos=[...new Set(R.mensal.map(m=>m.ano))]; const pc=(v,t)=>t?pct(100*v/t):"—"; let body="";
-    const curY=String(new Date().getFullYear());
-    anos.forEach(ano=>{ if(!(ano in realOpenYears)) realOpenYears[ano]=(ano===curY); });
-    anos.forEach(ano=>{const ms=R.mensal.filter(m=>m.ano===ano); const open=realOpenYears[ano];
+    anos.forEach(ano=>{const ms=R.mensal.filter(m=>m.ano===ano);
       const sca=ms.reduce((s,m)=>s+m.ca,0),scf=ms.reduce((s,m)=>s+m.cf,0),scr=ms.reduce((s,m)=>s+m.cr,0),stc=ms.reduce((s,m)=>s+m.tc,0),stv=ms.reduce((s,m)=>s+m.tv,0);
-      body+=`<tr class="real-year" data-yr="${ano}"><td><span class="prov-caret">${open?'▾':'▸'}</span> ${ano}</td><td>${fmt(sca)}</td><td>${pc(sca,stc)}</td><td>${fmt(scf)}</td><td>${pc(scf,stc)}</td><td>${fmt(scr)}</td><td>${pc(scr,stc)}</td><td>${fmt(stc)}</td><td>${stv?fmt(stv):"—"}</td><td class="${stc-stv>=0?'pos':'neg'}">${fmt(stc-stv)}</td></tr>`;
-      ms.forEach(m=>{body+=`<tr class="real-month ry-${ano}" style="display:${open?'':'none'}"><td style="padding-left:24px;color:var(--muted)">${m.mes}</td><td>${m.ca?fmt(m.ca):"—"}</td><td>${m.tc?pc(m.ca,m.tc):"—"}</td><td>${m.cf?fmt(m.cf):"—"}</td><td>${m.tc?pc(m.cf,m.tc):"—"}</td><td>${m.cr?fmt(m.cr):"—"}</td><td>${m.tc?pc(m.cr,m.tc):"—"}</td><td style="font-weight:600">${fmt(m.tc)}</td><td>${m.tv?`<span class="neg">${fmt(m.tv)}</span>`:"—"}</td><td class="${m.liq>=0?'pos':'neg'}">${fmt(m.liq)}</td></tr>`;});
+      body+=`<tr style="font-weight:700;background:#F8F9FB"><td>${ano}</td><td>${fmt(sca)}</td><td>${pc(sca,stc)}</td><td>${fmt(scf)}</td><td>${pc(scf,stc)}</td><td>${fmt(scr)}</td><td>${pc(scr,stc)}</td><td>${fmt(stc)}</td><td>${stv?fmt(stv):"—"}</td><td class="${stc-stv>=0?'pos':'neg'}">${fmt(stc-stv)}</td></tr>`;
+      ms.forEach(m=>{body+=`<tr><td style="padding-left:16px;color:var(--muted)">${m.mes}</td><td>${m.ca?fmt(m.ca):"—"}</td><td>${m.tc?pc(m.ca,m.tc):"—"}</td><td>${m.cf?fmt(m.cf):"—"}</td><td>${m.tc?pc(m.cf,m.tc):"—"}</td><td>${m.cr?fmt(m.cr):"—"}</td><td>${m.tc?pc(m.cr,m.tc):"—"}</td><td style="font-weight:600">${fmt(m.tc)}</td><td>${m.tv?`<span class="neg">${fmt(m.tv)}</span>`:"—"}</td><td class="${m.liq>=0?'pos':'neg'}">${fmt(m.liq)}</td></tr>`;});
     });
     tb.innerHTML=head+"<tbody>"+body+"</tbody>";
   }
-}
-function toggleRealYear(yr){
-  realOpenYears[yr]=!realOpenYears[yr];
-  const open=realOpenYears[yr];
-  document.querySelectorAll("#realTable tr.ry-"+yr).forEach(tr=>{tr.style.display=open?"":"none";});
-  const cr=document.querySelector('#realTable tr.real-year[data-yr="'+yr+'"] .prov-caret');
-  if(cr) cr.textContent=open?"▾":"▸";
 }
 function drawRealizadosCharts(){
   const R=computeRealizados();
@@ -1180,8 +1078,6 @@ function setupTabs(){
   const ac=document.getElementById("acaoTableCart"); if(ac) ac.addEventListener("click",onHeadClick(cartAcaoSort,renderAcaoTable));
   /* clique nos anos da aba Proventos para expandir/recolher os meses */
   const pt=document.getElementById("provTable"); if(pt) pt.addEventListener("click",e=>{const yr=e.target.closest("tr.prov-year"); if(yr) toggleProvYear(yr.dataset.yy);});
-  const pas=document.getElementById("provAtivoSortSel"); if(pas) pas.addEventListener("change",e=>{provAtivoSort=e.target.value;renderProvAtivo();});
-  const rt=document.getElementById("realTable"); if(rt) rt.addEventListener("click",e=>{const yr=e.target.closest("tr.real-year"); if(yr) toggleRealYear(yr.dataset.yr);});
 }
 function setDate(){const now=new Date();
   document.getElementById("wd").textContent=now.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
