@@ -141,21 +141,6 @@
   .aporte-form .ativo-in{width:140px}
   .aporte-form button{font-size:13px;font-weight:700;border:none;background:var(--roxo);color:#fff;border-radius:8px;padding:9px 18px;cursor:pointer}
   .del-btn{border:none;background:none;color:var(--vermelho);cursor:pointer;font-weight:600;font-size:12px}
-  .nws-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
-  .nws-upd{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
-  .nws-upd .dot{width:8px;height:8px;border-radius:50%;background:var(--verde);flex:none}
-  .nws-count{font-size:12px;font-weight:600;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 13px;white-space:nowrap}
-  .nws{display:flex;background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.07);margin-bottom:12px;overflow:hidden}
-  .nws .nbar{width:4px;flex:none}
-  .nws .nin{padding:15px 18px;flex:1;min-width:0}
-  .nws .ntop{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
-  .nws .ntk{background:#1F2937;color:#fff;font-weight:700;font-size:11.5px;padding:3px 9px;border-radius:6px;letter-spacing:.02em}
-  .nws .ntag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:5px}
-  .nws .nti{font-weight:700;font-size:15px;color:var(--ink);margin-bottom:6px;line-height:1.35}
-  .nws .nbody{font-size:12.5px;color:#6B7280;line-height:1.55}
-  .nws .nbody b{color:#374151;font-weight:700}
-  .nws .nbody a{color:var(--acoes);text-decoration:none;white-space:nowrap}
-  .nws .ndate{font-size:11px;color:#9CA3AF;margin-top:11px}
   @media(max-width:920px){.cardgrid{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:560px){.cardgrid{grid-template-columns:1fr}}
   .err{font-size:12.5px;color:#92400e;background:#FEF3C7;border:1px solid #FDE68A;border-radius:9px;padding:9px 13px;margin-bottom:14px;display:none}
@@ -182,7 +167,6 @@
 
   <nav class="tabs" id="tabs">
     <button data-tab="carteira" class="active">Carteira</button>
-    <button data-tab="fatos">Notícias</button>
     <button data-tab="fiis">FIIs</button>
     <button data-tab="acoes">Ações</button>
     <button data-tab="proventos">Proventos</button>
@@ -285,17 +269,15 @@
       <div id="apResumo" style="margin-top:16px"></div>
       <div id="apHist" style="overflow-x:auto"></div>
     </div>
-    <!-- 3. Aporte mensal planejado -->
-    <div class="card" style="margin-bottom:16px"><div class="panel-h">Aporte mensal planejado <span class="hint">jun–dez</span></div><div class="chart-box sm"><canvas id="aporteMensalChart"></canvas></div></div>
-    <!-- 4. Onde aportar — ranking por ativo -->
+    <!-- Programação mensal — agora logo após Meus Aportes, expansível por mês -->
+    <div class="card" style="overflow-x:auto;margin-bottom:16px"><div class="panel-h">Programação mensal <span class="hint">clique no mês para ver aportes por ativo · planejado vs já feito</span></div><table id="aporteTable"></table></div>
+    <!-- Onde aportar — ranking por ativo -->
     <div class="sec-title">Onde aportar — ranking por ativo <span style="font-weight:500;color:var(--muted);font-size:12px">proporcional à Margem de Segurança</span></div>
     <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
       <div class="card"><div class="panel-h">Ações <span class="hint" id="aporteAcaoTot"></span></div><div id="aporteAcaoRank"></div></div>
       <div class="card"><div class="panel-h">FIIs <span class="hint" id="aporteFiiTot"></span></div><div id="aporteFiiRank"></div></div>
     </div>
-    <!-- 5. Programação mensal -->
-    <div class="card" style="overflow-x:auto;margin-bottom:16px"><div class="panel-h">Programação mensal — Jun a Dez</div><table id="aporteTable"></table></div>
-    <!-- 6. Aporte por classe -->
+    <!-- Aporte por classe -->
     <div class="card" style="margin-bottom:16px"><div class="panel-h">Aporte por classe</div><div class="chart-box sm"><canvas id="aporteClasseChart"></canvas></div><div class="legendrow" id="aporteClasseLeg"></div></div>
     <p class="note" style="margin-bottom:22px">Plano forward-looking calculado ao vivo da planilha (gap até a meta, regra de Margem de Segurança). Não é histórico de transações nem recomendação de investimento.</p>
     <div style="border-top:1px solid var(--line);margin-bottom:18px"></div>
@@ -320,13 +302,6 @@
     <div class="card" style="overflow-x:auto"><div class="panel-h">Programação mês a mês</div><table id="metaTable"></table></div>
   </section>
 
-  <!-- ABA NOTÍCIAS -->
-  <section data-panel="fatos" class="hide">
-    <div class="nws-head"><div class="nws-upd" id="fatosUpd"></div><span class="nws-count" id="fatosCount"></span></div>
-    <div id="fatosWrap"></div>
-    <p class="note">Só aparecem ativos da sua carteira que tiveram fato relevante. Atualizado todo dia às 11h. Confira sempre na fonte antes de decidir — não é recomendação.</p>
-  </section>
-
   <p class="note" id="footnote"></p>
 </div>
 
@@ -339,9 +314,10 @@ const DRIVE_TOOL = "mcp__fcfb38a8-9339-4ca8-b68b-70783af4a15e__read_file_content
 const SHEET_ID = "1ZbX-wGNM-WR0X1v-u61nF_Zx2pqbE5VOgabY3EZJfmM";
 const SHEET_TABS = { FIIS:"FIIS", ACOES:"AÇÕES", PROVENTOS:"PROVENTO$", PATRIMONIO:"PATRIMÔNIO" };
 
-/* ===== retrato de segurança (30/05/2026) ===== */
+/* ===== retrato de segurança (atualizado pela tarefa das 11h; não editar manualmente entre os marcadores) ===== */
+/* SNAPSHOT_START */
 const SNAPSHOT = {
-  updated:"retrato salvo · 30/05/2026", patrimonio:69759.54, dyHolding:7.98, proventosTotal:5567.02,
+  updated:"retrato salvo · 31/05/2026", patrimonio:69759.54, dyHolding:7.98, proventosTotal:5567.02,
   alloc:[
     {nome:"Ações BR", valor:40263.38, atual:58, ideal:55, delta:-1895.63, cor:"var(--acoes)"},
     {nome:"FIIs", valor:29496.16, atual:42, ideal:25, delta:-12056.28, cor:"var(--fiis)"},
@@ -379,9 +355,10 @@ const SNAPSHOT = {
   provAnos:[
     {ano:"2024",fii:0,acao:0,total:0,media:0,dia:0,varAA:null},
     {ano:"2025",fii:1998.54,acao:972.01,total:2970.55,media:247.55,dia:8.13,varAA:null},
-    {ano:"2026",fii:1453.70,acao:1142.77,total:2596.47,media:216.37,dia:17.31,varAA:-12.59},
+    {ano:"2026",fii:1453.70,acao:1142.77,total:2596.47,media:216.37,dia:17.20,varAA:-12.59},
   ],
 };
+/* SNAPSHOT_END */
 
 /* ===== helpers ===== */
 const BRL=new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"});
@@ -562,7 +539,7 @@ function render(d){
   renderProvKpis(d); renderIndep(d,totFii,totAcao); renderProvTable(d); renderProj(d);
 
   /* atenção + aportes + meta */
-  renderAlerts(d,acaoSet); renderRealizados(); renderAportes(d); renderMeta2026(d); renderRegistro(); renderFatos();
+  renderAlerts(d,acaoSet); renderRealizados(); renderAportes(d); renderMeta2026(d); renderRegistro();
 
   /* charts */
   destroy();
@@ -811,21 +788,91 @@ function renderAportes(d){
     const split=(lbl,ap,fp)=>`<div style="margin:12px 0"><div style="font-size:12px;color:var(--muted);margin-bottom:5px">${lbl}</div><div style="display:flex;height:24px;border-radius:6px;overflow:hidden;font-size:11px;font-weight:700;color:#fff"><div style="width:${ap}%;background:${colVar('var(--acoes)')};display:flex;align-items:center;justify-content:center">${pct(ap)}</div><div style="width:${fp}%;background:${colVar('var(--fiis)')};display:flex;align-items:center;justify-content:center">${pct(fp)}</div></div></div>`;
     aa.innerHTML=split("Hoje",100*P.acoesAtual/totH,100*P.fiisAtual/totH)+split("Alvo (dez/26)",CONFIG.metaAcoesPct,CONFIG.metaFiisPct)+`<div class="legendrow" style="margin-top:4px"><span><i style="background:${colVar('var(--acoes)')}"></i>Ações</span><span><i style="background:${colVar('var(--fiis)')}"></i>FIIs</span></div>`;
   }
-  const startIdx=new Date().getMonth()+1; let proj=P.pat; const rows=[];
-  for(let i=0;i<P.monthsLeft;i++){const mi=startIdx+i; if(mi>11)break; proj+=P.mensal; rows.push({mes:MES12[mi],pat:proj});}
-  const head=`<thead><tr><th>Mês</th><th>Aporte Ações</th><th>Aporte FIIs</th><th>Total</th><th>Patrim. projetado</th></tr></thead>`;
-  const body=rows.map(r=>`<tr><td>${r.mes}/26</td><td>${fmt(P.mAcoes)}</td><td>${fmt(P.mFiis)}</td><td style="font-weight:600">${fmt(P.mensal)}</td><td>${fmt(r.pat)}</td></tr>`).join("");
-  const foot=`<tr style="font-weight:700;border-top:2px solid var(--line)"><td>Total</td><td>${fmt(P.gAcoes)}</td><td>${fmt(P.gFiis)}</td><td>${fmt(P.gap)}</td><td>${fmt(P.meta)}</td></tr>`;
-  document.getElementById("aporteTable").innerHTML=head+"<tbody>"+(body?body+foot:`<tr><td colspan="5" style="text-align:center;color:var(--verde)">Meta já atingida 🎉</td></tr>`)+"</tbody>";
+  /* === Programação mensal expansível: cada mês abre o detalhe ativo a ativo === */
+  const eligAcoes=d.acoes.filter(x=>x.ms>0); const sMsAc=eligAcoes.reduce((s,x)=>s+x.ms,0)||1;
+  const perAcao=eligAcoes.map(x=>({...x,mMes:P.mAcoes*x.ms/sMsAc})).sort((a,b)=>b.ms-a.ms);
+  const eligFiis=d.fiis.filter(x=>x.ms>0); const sMsFi=eligFiis.reduce((s,x)=>s+x.ms,0)||1;
+  const perFii=eligFiis.map(x=>({...x,mMes:P.mFiis*x.ms/sMsFi})).sort((a,b)=>b.ms-a.ms);
+  let regList=[]; try{regList=apLoad()||[];}catch(e){}
+  const aportadoAtivoMes=(mi,ativo)=>regList.filter(r=>r.mesIdx===mi&&(r.ativo||"").toUpperCase()===ativo.toUpperCase()).reduce((s,r)=>s+r.valor,0);
+  const aportadoMes=(mi)=>regList.filter(r=>r.mesIdx===mi).reduce((s,r)=>s+r.valor,0);
+  const today=new Date(); const curMi=today.getMonth();
+  const apMonths=[...new Set(regList.map(r=>r.mesIdx))];
+  const startIdx=curMi+1; const fwdMis=new Set();
+  for(let i=0;i<P.monthsLeft;i++){const mi=startIdx+i; if(mi>11)break; fwdMis.add(mi);}
+  let proj=P.pat; const monthRows=[];
+  /* meses passados/atual com aporte registrado — aparecem em cima, sem planejado */
+  apMonths.filter(mi=>!fwdMis.has(mi)).sort((a,b)=>a-b).forEach(mi=>{
+    monthRows.push({mes:MES12[mi]+"/26",mi,pat:null,past:true});
+  });
+  /* meses do plano forward */
+  for(let i=0;i<P.monthsLeft;i++){const mi=startIdx+i; if(mi>11)break; proj+=P.mensal; monthRows.push({mes:MES12[mi]+"/26",mi,pat:proj,past:false});}
+  const head=`<thead><tr><th style="width:24px"></th><th>Mês</th><th>Aporte Ações</th><th>Aporte FIIs</th><th>Total</th><th>Já aportei</th><th>Patrim. proj.</th></tr></thead>`;
+  let body="";
+  if(monthRows.length===0){
+    body=`<tr><td colspan="7" style="text-align:center;color:var(--verde)">Meta já atingida 🎉</td></tr>`;
+  } else {
+    const detailRows=(list,mi,past)=>{
+      const arr=list.map(x=>{
+        const ap=aportadoAtivoMes(mi,x.ativo);
+        if(past && ap===0) return ""; // mês passado: só mostra o que foi aportado
+        const falta=past?0:Math.max(0,x.mMes-ap);
+        const done=!past && ap>=x.mMes*0.95;
+        const apCol=done?"var(--verde)":ap>0?"var(--ambar)":"var(--muted)";
+        const planCell=past?"<td>—</td>":`<td>${fmt(x.mMes)}</td>`;
+        const faltaCell=past?"<td>—</td>":(falta>0?`<td class="neg">${fmt(falta)}</td>`:`<td class="pos">✓ ok</td>`);
+        return `<tr><td class="tk">${x.ativo}</td><td><span class="tag">${x.setor}</span></td><td class="${msClass(x.ms)}">${pct(x.ms)}</td>${planCell}<td style="color:${colVar(apCol)};font-weight:${ap>0?'600':'400'}">${ap>0?fmt(ap):'—'}</td>${faltaCell}</tr>`;
+      }).filter(s=>s).join("");
+      return arr || `<tr><td colspan="6" style="color:var(--muted);font-size:11.5px;text-align:center;padding:8px">${past?'Nenhum aporte por ativo neste mês.':'Nenhum ativo elegível (todos sem M.S. > 0).'}</td></tr>`;
+    };
+    monthRows.forEach(r=>{
+      const apTot=aportadoMes(r.mi);
+      const semAt=regList.filter(x=>x.mesIdx===r.mi && !(x.ativo||"").trim()).reduce((s,x)=>s+x.valor,0);
+      const semAtNote=semAt>0?`<div style="font-size:11.5px;color:#92400E;background:#FEF3C7;border:1px solid #FDE68A;border-radius:6px;padding:8px 11px;margin-top:10px"><b>${fmt(semAt)}</b> registrado neste mês sem ativo — entra no total, mas não nas linhas por ativo. Para aparecer aqui em baixo, edite o aporte e informe o ticker.</div>`:'';
+      const mesTag=r.past?` <span class="tag" style="background:#F1F3F7;color:var(--muted)">${r.mi<curMi?'passado':'este mês'}</span>`:'';
+      const rowStyle=r.past?'cursor:pointer;background:#FAFBFC':'cursor:pointer';
+      const tdAc=r.past?'<td style="color:var(--muted)">—</td>':`<td>${fmt(P.mAcoes)}</td>`;
+      const tdFi=r.past?'<td style="color:var(--muted)">—</td>':`<td>${fmt(P.mFiis)}</td>`;
+      const tdTot=r.past?'<td style="color:var(--muted)">—</td>':`<td style="font-weight:600">${fmt(P.mensal)}</td>`;
+      const tdPat=r.past?'<td style="color:var(--muted)">—</td>':`<td>${fmt(r.pat)}</td>`;
+      body+=`<tr class="apo-row" data-mi="${r.mi}" style="${rowStyle}">
+        <td><span class="apo-caret">▸</span></td>
+        <td><b>${r.mes}</b>${mesTag}</td>
+        ${tdAc}${tdFi}${tdTot}
+        <td>${apTot>0?fmt(apTot):'—'}</td>
+        ${tdPat}
+      </tr>
+      <tr class="apo-detail" data-mi="${r.mi}" style="display:none">
+        <td colspan="7" style="background:#F9FAFB;padding:14px 18px">
+          <div style="font-size:10.5px;color:var(--label);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;border-left:3px solid ${colVar('var(--acoes)')};padding-left:8px">Ações ${r.past?'— histórico':'— alvo '+fmt(P.mAcoes)+'/mês'}</div>
+          <table style="margin-bottom:14px">
+            <thead><tr><th>Ativo</th><th>Setor</th><th>M.S.</th><th>Planejado</th><th>Já aportei</th><th>Falta</th></tr></thead>
+            <tbody>${detailRows(perAcao,r.mi,r.past)}</tbody>
+          </table>
+          <div style="font-size:10.5px;color:var(--label);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin:6px 0 8px;border-left:3px solid ${colVar('var(--fiis)')};padding-left:8px">FIIs ${r.past?'— histórico':'— alvo '+fmt(P.mFiis)+'/mês'}</div>
+          <table>
+            <thead><tr><th>Ativo</th><th>Setor</th><th>M.S.</th><th>Planejado</th><th>Já aportei</th><th>Falta</th></tr></thead>
+            <tbody>${detailRows(perFii,r.mi,r.past)}</tbody>
+          </table>
+          ${semAtNote}
+          <div style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5">"Já aportei" vem do registro <b>Meus Aportes</b> acima — só aparece por ativo quando o ticker está preenchido. ${r.past?'':'Use a coluna <b>Falta</b> como meta do mês.'}</div>
+        </td>
+      </tr>`;
+    });
+    body+=`<tr style="font-weight:700;border-top:2px solid var(--line)"><td></td><td>Total plano (jun→dez)</td><td>${fmt(P.gAcoes)}</td><td>${fmt(P.gFiis)}</td><td>${fmt(P.gap)}</td><td></td><td>${fmt(P.meta)}</td></tr>`;
+  }
+  const tbl=document.getElementById("aporteTable"); tbl.innerHTML=head+"<tbody>"+body+"</tbody>";
+  tbl.querySelectorAll("tr.apo-row").forEach(tr=>{
+    tr.addEventListener("click",()=>{
+      const mi=tr.dataset.mi;
+      const det=tbl.querySelector(`tr.apo-detail[data-mi="${mi}"]`);
+      const car=tr.querySelector(".apo-caret");
+      if(det){ const open=det.style.display!=="none"; det.style.display=open?"none":"table-row"; if(car) car.textContent=open?"▸":"▾"; }
+    });
+  });
 }
 function drawAporteCharts(d){
-  const P=computePlan(d); const startIdx=new Date().getMonth()+1; const labels=[],ac=[],fi=[];
-  for(let i=0;i<P.monthsLeft;i++){const mi=startIdx+i; if(mi>11)break; labels.push(MES12[mi]+"/26"); ac.push(Math.round(P.mAcoes)); fi.push(Math.round(P.mFiis));}
-  charts.push(new Chart(document.getElementById("aporteMensalChart"),{type:"bar",
-    data:{labels,datasets:[
-      {label:"Ações",data:ac,backgroundColor:colVar("var(--acoes)"),stack:"s",borderRadius:3},
-      {label:"FIIs",data:fi,backgroundColor:colVar("var(--fiis)"),stack:"s",borderRadius:3}]},
-    options:{plugins:{legend:{position:"bottom",labels:{boxWidth:11,font:{size:11}}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}`}}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,ticks:{callback:v=>"R$ "+(v/1000).toLocaleString("pt-BR")+"k"}}}}}));
+  const P=computePlan(d);
   charts.push(new Chart(document.getElementById("aporteClasseChart"),{type:"doughnut",
     data:{labels:["Ações","FIIs"],datasets:[{data:[Math.round(P.gAcoes),Math.round(P.gFiis)],backgroundColor:[colVar("var(--acoes)"),colVar("var(--fiis)")],borderColor:"#fff",borderWidth:2}]},
     options:{cutout:"62%",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmt(c.parsed)} (${pct(P.gap?100*c.parsed/P.gap:0)})`}}}}}));
@@ -994,45 +1041,11 @@ function drawMetaProj(d){
     options:{plugins:{legend:{position:"bottom",labels:{boxWidth:11,font:{size:11}}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.parsed.y)}`}}},scales:{y:{ticks:{callback:v=>"R$ "+(v/1000).toLocaleString("pt-BR")+"k"}},x:{grid:{display:false}}}}}));
 }
 
-/* ===== Fatos Relevantes (atualizado pela tarefa das 11h; editar só o bloco entre os marcadores) ===== */
-/* FATOS_START */
-const FATOS = {
-  updated: "29/05/2026 · 11:00",
-  itens: [
-    {cat:"macro", ticker:"SELIC", titulo:"Copom corta Selic para 14,5% — 2ª queda seguida", corpo:"Decisão por <b>6 votos a 0</b> em <b>29/05</b>: redução de <b>0,25 p.p.</b>, de <b>14,75%</b> para <b>14,50%</b>. Movimento já esperado e amplia ciclo de afrouxamento, ainda com guerra no Oriente Médio no radar.", data:"29/05/2026", fonte:"https://agenciabrasil.ebc.com.br/economia/noticia/2026-04/banco-central-reduz-juros-basicos-para-145-ao-ano"},
-    {cat:"alerta", ticker:"AURE3", titulo:"Auren reverte lucro e tem prejuízo de R$ 602 mi no 1T26", corpo:"Receita líquida de <b>R$ 3,1 bi</b> (+4%), mas custo de compra de energia subiu <b>33%</b> e Ebitda ajustado caiu <b>23%</b>. Mercado segue sem projetar DY relevante para 2026.", data:"1T26", fonte:"https://www.nordinvestimentos.com.br/blog/auren-aure3-resultados-1t26/"},
-    {cat:"resultado", ticker:"VALE3", titulo:"Vale lucra US$ 1,89 bi no 1T26 (+36%)", corpo:"Em reais, lucro de ~<b>R$ 9,4 bi</b>, com avanço em volumes e preços de minério, cobre e níquel. Safra vê <b>sem dividendo extraordinário em 2026</b>; DY projetado de <b>6%–6,75%</b>.", data:"1T26", fonte:"https://arevista.com.br/investimentos/vale-vale3-lucra-us-189-bilhao-no-1t26-mas-acoes-sentem-pressao-dividendos-ainda-sustentam-tese/"},
-    {cat:"resultado", ticker:"ISAE4", titulo:"ISA Energia tem lucro de R$ 358 mi no 1T26 (+6%)", corpo:"Ebitda consolidado de <b>R$ 1,02 bi</b> (<b>+10,6%</b> a/a). Segue entre as elétricas com melhor combinação de geração de caixa e dividendos.", data:"1T26", fonte:"https://arevista.com.br/dividendos/axia3-isae4-ou-taee11-qual-acao-eletrica-esta-mais-atrativa-para-dividendos/"},
-    {cat:"provento", ticker:"XPML11", titulo:"R$ 0,92/cota pago em 25/05", corpo:"Data com <b>18/05</b>, pagamento em <b>25/05</b>; DY mensal de ~<b>0,83%</b>. Mês também marcou venda de 30% do Shops Jardins por <b>R$ 20 mi</b>.", data:"25/05/2026", fonte:"https://statusinvest.com.br/fundos-imobiliarios/xpml11"},
-    {cat:"provento", ticker:"BTLG11", titulo:"R$ 0,81/cota pago em 25/05", corpo:"Data com em <b>15/05</b>, pagamento em <b>25/05</b>; DY mensal de ~<b>0,78%</b>. Distribuição mantida estável vs. abril.", data:"25/05/2026", fonte:"https://statusinvest.com.br/noticias/btlg11-pagamento-081-dividendos-maio-2026/"},
-    {cat:"provento", ticker:"VGIR11", titulo:"R$ 0,12/cota (yield mensal de 1,23%)", corpo:"Ex em <b>13/05</b>, pago em <b>20/05</b>. FII de papel atrelado ao CDI, segue beneficiado por Selic alta.", data:"20/05/2026", fonte:"https://www.suno.com.br/noticias/vgir11-dividendos-maio-2026/"},
-    {cat:"provento", ticker:"RBRR11", titulo:"Maior dividendo dos últimos 9 meses", corpo:"Distribuição de <b>R$ 0,90/cota</b> (referente a abril), ex em <b>12/05</b> e pagamento em <b>19/05</b> — maior valor desde set/25.", data:"19/05/2026", fonte:"https://fiis.com.br/noticias/fundo-imobiliario-rbrr11-vai-pagar-maior-dividendo-dos-ultimos-9-meses-maio-2026-jj/"},
-    {cat:"provento", ticker:"RECR11", titulo:"R$ 1,05/cota pago em 15/05", corpo:"Segue entre os maiores DYs dos seus FIIs de papel (CRIs indexados a <b>IPCA+</b>).", data:"15/05/2026", fonte:"https://investidor10.com.br/fiis/recr11/"},
-    {cat:"provento", ticker:"HGRU11", titulo:"R$ 0,95/cota pago em 15/05", corpo:"FII híbrido de renda urbana, distribuição mensal estável.", data:"15/05/2026", fonte:"https://statusinvest.com.br/fundos-imobiliarios/hgru11"},
-    {cat:"provento", ticker:"HGCR11", titulo:"R$ 0,95/cota pago em 15/05", corpo:"FII de papel (CRIs); DY de <b>~0,95%</b> sobre a cotação de fechamento de abril.", data:"15/05/2026", fonte:"https://statusinvest.com.br/fundos-imobiliarios/hgcr11"},
-    {cat:"dividendo", ticker:"BBAS3", titulo:"R$ 465,7 mi em JCP — data com em 01/06", corpo:"JCP do <b>1T26</b> aprovado em <b>13/05</b>; <b>data com 01/06</b>, ex em <b>02/06</b> e pagamento em <b>11/06</b>. Payout do ano calibrado em <b>30%</b>.", data:"13/05/2026", fonte:"https://investidor10.com.br/noticias/dividendos-do-banco-do-brasil-bbas3-saiba-quanto-e-quando-virao-em-2026-118072/"},
-    {cat:"resultado", ticker:"BBSE3", titulo:"Lucro de R$ 2,2 bi no 1T26 (+11%)", corpo:"Resultado financeiro <b>+59%</b> compensou prêmios mais fracos. DY projetado de <b>~12%</b> para 2026; distribuição prevista de <b>R$ 4,95 bi</b>.", data:"1T26", fonte:"https://www.nordinvestimentos.com.br/blog/bb-seguridade-bbse3-1t26/"},
-    {cat:"dividendo", ticker:"ITUB4", titulo:"JCP mensal de R$ 0,01765/ação pago em 04/05", corpo:"Calendário 2026 do <b>JCP mensal</b> mantido em <b>R$ 0,01765 bruto</b> (R$ 0,0150 líquido). Direito aos posicionados entre <b>31/03 e 01/04</b>.", data:"04/05/2026", fonte:"https://www.moneytimes.com.br/itau-itub4-divulga-cronograma-de-jcp-para-2026-veja-valores-por-acao-lmrs/"},
-  ],
-};
-/* FATOS_END */
-function renderFatos(){
-  const wrap=document.getElementById("fatosWrap"); if(!wrap) return;
-  const itens=FATOS.itens||[];
-  const u=document.getElementById("fatosUpd"); if(u) u.innerHTML=`<span class="dot"></span>Atualizado <b style="color:var(--ink)">${FATOS.updated||"—"}</b>`;
-  const c=document.getElementById("fatosCount"); if(c) c.textContent=itens.length+(itens.length===1?" fato hoje":" fatos hoje");
-  const CAT={provento:["Proventos","#DCFCE7","#15803D","#16A34A"],dividendo:["Dividendo","#FEF3C7","#92400E","#D97706"],resultado:["Resultado","#DBEAFE","#1D4ED8","#2563EB"],setor:["Setor","#CCFBF1","#0F766E","#14B8A6"],macro:["Macro","#E5E7EB","#1F2937","#111827"],alerta:["Alerta","#FFEDD5","#C2410C","#EA580C"],fii:["FII","#EDE9FE","#6D28D9","#7C3AED"],noticia:["Notícia","#F3F4F6","#374151","#9CA3AF"]};
-  if(!itens.length){ wrap.innerHTML=`<div class="card"><div class="sub" style="color:var(--muted)">Sem fatos relevantes para os seus ativos hoje.</div></div>`; return; }
-  wrap.innerHTML=itens.map(f=>{const t=CAT[f.cat]||CAT.noticia;
-    return `<div class="nws"><div class="nbar" style="background:${t[3]}"></div><div class="nin"><div class="ntop">${f.ticker?`<span class="ntk">${f.ticker}</span>`:""}<span class="ntag" style="background:${t[1]};color:${t[2]}">${t[0]}</span></div><div class="nti">${f.titulo}</div><div class="nbody">${f.corpo||""}${f.fonte?` <a href="${f.fonte}" target="_blank" rel="noopener">fonte ↗</a>`:""}</div><div class="ndate">📅 ${f.data||""}</div></div></div>`;
-  }).join("");
-}
-
 /* ===== registro de aportes (localStorage) ===== */
 const AP_KEY="tonetto_aportes_v1";
 function apLoad(){try{return JSON.parse(localStorage.getItem(AP_KEY))||[]}catch(e){return []}}
 function apSave(a){try{localStorage.setItem(AP_KEY,JSON.stringify(a))}catch(e){}}
-function apDel(id){apSave(apLoad().filter(x=>x.id!==id));renderRegistro();}
+function apDel(id){apSave(apLoad().filter(x=>x.id!==id));renderRegistro();if(typeof DATA!=="undefined"&&DATA)renderAportes(DATA);}
 function renderRegistro(){
   const res=document.getElementById("apResumo"); if(!res) return;
   const list=apLoad().slice().sort((a,b)=>(a.mesIdx-b.mesIdx)||(a.id-b.id));
@@ -1060,7 +1073,7 @@ function setupRegistro(){
     a.push({id:Date.now(),mes:mesSel.options[mesSel.selectedIndex].text,mesIdx:+mesSel.value,classe:document.getElementById("apClasse").value,ativo:(document.getElementById("apAtivo").value||"").trim().toUpperCase(),valor});
     apSave(a);
     document.getElementById("apValor").value=""; document.getElementById("apAtivo").value="";
-    renderRegistro();
+    renderRegistro(); if(typeof DATA!=="undefined"&&DATA) renderAportes(DATA);
   });
 }
 
