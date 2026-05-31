@@ -277,8 +277,6 @@
       <div class="card"><div class="panel-h">Ações <span class="hint" id="aporteAcaoTot"></span></div><div id="aporteAcaoRank"></div></div>
       <div class="card"><div class="panel-h">FIIs <span class="hint" id="aporteFiiTot"></span></div><div id="aporteFiiRank"></div></div>
     </div>
-    <!-- Aporte por classe -->
-    <div class="card" style="margin-bottom:16px"><div class="panel-h">Aporte por classe</div><div class="chart-box sm"><canvas id="aporteClasseChart"></canvas></div><div class="legendrow" id="aporteClasseLeg"></div></div>
     <p class="note" style="margin-bottom:22px">Plano forward-looking calculado ao vivo da planilha (gap até a meta, regra de Margem de Segurança). Não é histórico de transações nem recomendação de investimento.</p>
     <div style="border-top:1px solid var(--line);margin-bottom:18px"></div>
     <!-- 7. Aportes realizados -->
@@ -873,10 +871,6 @@ function renderAportes(d){
 }
 function drawAporteCharts(d){
   const P=computePlan(d);
-  charts.push(new Chart(document.getElementById("aporteClasseChart"),{type:"doughnut",
-    data:{labels:["Ações","FIIs"],datasets:[{data:[Math.round(P.gAcoes),Math.round(P.gFiis)],backgroundColor:[colVar("var(--acoes)"),colVar("var(--fiis)")],borderColor:"#fff",borderWidth:2}]},
-    options:{cutout:"62%",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmt(c.parsed)} (${pct(P.gap?100*c.parsed/P.gap:0)})`}}}}}));
-  document.getElementById("aporteClasseLeg").innerHTML=`<span><i style="background:${colVar('var(--acoes)')}"></i>Ações ${pct(P.gap?100*P.gAcoes/P.gap:0)}</span><span><i style="background:${colVar('var(--fiis)')}"></i>FIIs ${pct(P.gap?100*P.gFiis/P.gap:0)}</span>`;
 }
 
 /* ===== charts ===== */
